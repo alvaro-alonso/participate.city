@@ -1,0 +1,27 @@
+import "ecc/babyjubjubParams" as context
+import "ecc/proofOfOwnership" as proofOfOwnership
+import "hashes/sha256/512bitPadded" as sha256
+import "utils/pack/nonStrictUnpack256" as unpack256
+import "utils/pack/unpack128" as unpack128
+import "./merkleTree" as merkleTreePath
+
+def combine256(field[2] values) -> (field[256]):
+    a = unpack128(values[0])
+    b = unpack128(values[1])
+    return [...a, ...b]
+
+def main(private field[2] pk, private field sk, field[2] rootDigest, private field[2] leafDigest, private field[2] pathDigest0) -> (field):
+
+    context = context()
+    1 == proofOfOwnership(pk, sk, context) 
+
+    lhs = unpack256(pk[0])
+    rhs = unpack256(pk[1])
+    leafHash = sha256(lhs, rhs)
+    leafHash == combine256(leafDigest)
+    rootHash = combine256(rootDigest)
+    pathHash = combine256(pathDigest0)
+    
+    1 == merkleTreePath(rootHash, leafHash, 0, pathHash)
+
+    return 1
