@@ -3,7 +3,7 @@ Link to the paper:
 
 https://www.overleaf.com/read/dbfrggrzdykm
 
-The code related to the zero knowledge proof of membership can be found under [zk-proof/tokePool.zok](https://github.com/alvaro-alonso/Ethereum-Anonymous-Voting/blob/master/zk-proof/tokenPool.zok)
+The code related to the zero knowledge proof of membership can be found under [zk-proof/tokenPool.zok](https://github.com/alvaro-alonso/Ethereum-Anonymous-Voting/blob/master/zk-proof/tokenPool.zok)
 
 # SETUP
 
