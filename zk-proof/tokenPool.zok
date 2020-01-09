@@ -10,7 +10,7 @@ def combine256(field[2] values) -> (field[256]):
     b = unpack128(values[1])
     return [...a, ...b]
 
-def main(private field[2] pk, private field sk, field[2] rootDigest, private field[2] leafDigest, private field[2] pathDigest0) -> (field):
+def main(private field[2] pk, private field sk, field[2] rootDigest, private field[3] directionPath, private field[2] leafDigest, private field[2] pathDigest0, private field[2] pathDigest1, private field[2] pathDigest2) -> (field):
 
     context = context()
     1 == proofOfOwnership(pk, sk, context) 
@@ -20,8 +20,10 @@ def main(private field[2] pk, private field sk, field[2] rootDigest, private fie
     leafHash = sha256(lhs, rhs)
     leafHash == combine256(leafDigest)
     rootHash = combine256(rootDigest)
-    pathHash = combine256(pathDigest0)
+    pathHash0 = combine256(pathDigest0)
+    pathHash1 = combine256(pathDigest1)
+    pathHash2 = combine256(pathDigest2)
     
-    1 == merkleTreePath(rootHash, leafHash, 0, pathHash)
+    1 == merkleTreePath(rootHash, directionPath, leafHash, pathHash0, pathHash1, pathHash2)
 
     return 1
