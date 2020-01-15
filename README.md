@@ -36,3 +36,20 @@ use ganache account on metamask:
 3. insert new password (12345678)
 4. choose network ganache local on browser
 
+# Generate New zk-proof
+
+1. start zokrates container:
+
+    $ docker run -ti zokrates/zokrates /bin/bash
+
+2. copy .zok file necessary for proof:
+
+    $ docker cp <FILE_PATH> <CONTAINER_ID>:./home/zokrates/<FILE_NAME>
+    
+3. compile proof with secure backend:
+
+    $ ./zokrates compile -i tokenPool.zok
+    $ ./zokrates setup --proving-scheme gm17
+    $ ./zokrates compute-witness -a <WITNESS_STRING>
+    $ ./zokrates export-verifier --proving-scheme gm17
+    $ ./zokrates generate-proof --proving-scheme gm17
