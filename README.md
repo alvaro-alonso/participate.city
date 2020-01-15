@@ -42,6 +42,10 @@ start zokrates container:
 
     $ docker run -ti zokrates/zokrates /bin/bash
 
+on a new window check container id with:
+
+		$ docker container ls
+
 copy .zok file necessary for proof:
 
     $ docker cp tokePool.zok <CONTAINER_ID>:./home/zokrates/tokenPool.zok
@@ -57,3 +61,9 @@ compile proof with secure backend:
     $ ./zokrates export-verifier --proving-scheme gm17
     
     $ ./zokrates generate-proof --proving-scheme gm17
+
+export proof and contract from container:
+
+		$ docker cp <CONTAINER_ID>:./home/zokrates/proof.json ./zk-proof/valid_proof.json
+
+		$ docker cp <CONTAINER_ID>:./home/zokrates/verifier.sol ./contracts/verifier.sol
