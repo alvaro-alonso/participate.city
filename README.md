@@ -38,18 +38,22 @@ use ganache account on metamask:
 
 # Generate New zk-proof
 
-1. start zokrates container:
+start zokrates container:
 
     $ docker run -ti zokrates/zokrates /bin/bash
 
-2. copy .zok file necessary for proof:
+copy .zok file necessary for proof:
 
-    $ docker cp <FILE_PATH> <CONTAINER_ID>:./home/zokrates/<FILE_NAME>
+    $ docker cp tokePool.zok <CONTAINER_ID>:./home/zokrates/tokenPool.zok
     
-3. compile proof with secure backend:
+compile proof with secure backend:
 
     $ ./zokrates compile -i tokenPool.zok
+    
     $ ./zokrates setup --proving-scheme gm17
+    
     $ ./zokrates compute-witness -a <WITNESS_STRING>
+    
     $ ./zokrates export-verifier --proving-scheme gm17
+    
     $ ./zokrates generate-proof --proving-scheme gm17
