@@ -1,7 +1,9 @@
 pragma solidity >=0.4.0 <0.6.0;
 // We have to specify what version of compiler this code will compile with
 
-contract Voting {
+import './verifier.sol';
+
+contract Voting is Verifier {
   /* mapping field below is equivalent to an associative array or hash.
   The key of the mapping is candidate name stored as type bytes32 and value is
   an unsigned integer to store the vote count
@@ -31,8 +33,15 @@ contract Voting {
 
   // This function increments the vote count for the specified candidate. This
   // is equivalent to casting a vote
-  function voteForCandidate(bytes32 candidate) public {
+  function voteForCandidate(
+    bytes32 candidate,
+    uint[2] memory a,
+    uint[2][2] memory b,
+    uint[2] memory c,
+    uint[3] memory input
+  ) public {
     require(validCandidate(candidate));
+    require(verifyTx(a, b, c, input));
     votesReceived[candidate] += 1;
   }
 

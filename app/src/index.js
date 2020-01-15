@@ -47,13 +47,22 @@ const App = {
   },
 
   voteFor: async function() {
-    const input = document.getElementById("candidate");
-    const candidate = input.value;
-    console.log(candidate, this.candidates);
+    try {
+      const zkProof = JSON.parse(document.getElementById("proof").value); 
+      var { proof, inputs } = zkProof;
+      var { a, b, c } = proof;
+      console.log(b);
+      console.log(inputs)
+    } catch (error) {
+      this.setStatus(`Wrong input for proof at ${error}`);
+      return -1;
+    }
+
+    const candidate = document.getElementById("candidate").value;
     if (this.candidates.includes(candidate)) {
       this.setStatus('Your vote is being processed, have some patience');
       const { voteForCandidate } = this.meta.methods;
-      await voteForCandidate(Web3.utils.asciiToHex(candidate)).send({ from: this.account });
+      await voteForCandidate(Web3.utils.asciiToHex(candidate), a, b, c, inputs).send({ from: this.account });
       this.setStatus('Your vote has been processed');
     } else {
       this.setStatus(`Wrong candidate. Please choose between ${this.candidates}`);
