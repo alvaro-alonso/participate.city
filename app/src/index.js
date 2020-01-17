@@ -23,6 +23,7 @@ const App = {
       const accounts = await web3.eth.getAccounts();
       this.account = accounts[0];
       this.getVotes();
+      this.getBudget();
 
     } catch (error) {
       console.error("Could not connect to contract or chain.");
@@ -33,7 +34,7 @@ const App = {
     const { totalVotesFor } = this.meta.methods;
     const balanceTable = document.getElementById("voteTable");
 
-    const results = await Promise.all(this.candidates.map((candidate) => totalVotesFor(Web3.utils.asciiToHex(candidate)).call()))
+    const results = await Promise.all(this.candidates.map((candidate) => totalVotesFor(Web3.utils.asciiToHex(candidate)).call()));
     balanceTable.innerHTML = '';
     let rowNum = 0;
     for (const votes of results) {
@@ -46,13 +47,18 @@ const App = {
     }
   },
 
+  getBudget: async function() {
+    const { getBalance } = this.meta.methods;
+    const budgetDiv = document.getElementById("budget");
+    const budget = await getBalance().call();
+    budgetDiv.innerHTML = budget;
+  },
+
   voteFor: async function() {
     try {
       const zkProof = JSON.parse(document.getElementById("proof").value); 
       var { proof, inputs } = zkProof;
       var { a, b, c } = proof;
-      console.log(b);
-      console.log(inputs)
     } catch (error) {
       this.setStatus(`Wrong input for proof at ${error}`);
       return -1;
@@ -69,6 +75,7 @@ const App = {
     }
 
     await this.getVotes();
+    await this.getBudget();
   },
 
   setStatus: function(message) {
