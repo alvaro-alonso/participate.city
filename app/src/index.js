@@ -35,6 +35,8 @@ const App = {
     const balanceTable = document.getElementById("voteTable");
 
     const results = await Promise.all(this.candidates.map((candidate) => totalVotesFor(Web3.utils.asciiToHex(candidate)).call()));
+    console.log(this.candidates.map((candidate) => Web3.utils.asciiToHex(candidate)));
+    console.log(this.candidates.map((candidate) => Web3.utils.utf8ToHex(candidate)));
     balanceTable.innerHTML = '';
     let rowNum = 0;
     for (const votes of results) {

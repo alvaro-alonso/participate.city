@@ -73910,10 +73910,32 @@
       },
       "address": "0x249a17179580F81B093BB7329D6205F5bFFBF9cD",
       "transactionHash": "0x40cf0d716e0fcbc51a421fc2b857b76173c45b7ff6b06b26a7e808148aa391b1"
+    },
+    "1579448737571": {
+      "events": {
+        "0x3f3cfdb26fb5f9f1786ab4f1a1f9cd4c0b5e726cbdfc26e495261731aad44e39": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "name": "s",
+              "type": "string"
+            }
+          ],
+          "name": "Verified",
+          "type": "event",
+          "signature": "0x3f3cfdb26fb5f9f1786ab4f1a1f9cd4c0b5e726cbdfc26e495261731aad44e39"
+        }
+      },
+      "links": {
+        "BN256G2": "0x1c0FEe30Fd783Ea6927F8a480e86f446A89Facb1"
+      },
+      "address": "0x6897469d479AFa0681BD564f22591Ca5e0d8598c",
+      "transactionHash": "0x70673692990ae19adfd0eb7d39f684a8a4dfa6c2b79f0c487497fcf988cfbabd"
     }
   },
   "schemaVersion": "3.0.16",
-  "updatedAt": "2020-01-17T17:23:04.828Z",
+  "updatedAt": "2020-01-19T15:45:45.201Z",
   "devdoc": {
     "methods": {}
   },

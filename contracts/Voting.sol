@@ -39,10 +39,12 @@ contract Voting is Verifier {
     uint[2][2] memory b,
     uint[2] memory c,
     uint[3] memory input
-  ) public {
+  ) public payable returns (bool) {
     require(validCandidate(candidate), "Invalid candidate name");
     require(verifyTx(a, b, c, input), "Incorrect proof given");
     votesReceived[candidate] += 1;
+    msg.sender.transfer(1);
+    return true;
   }
 
   function validCandidate(bytes32 candidate) public view returns (bool) {

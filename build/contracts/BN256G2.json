@@ -73939,10 +73939,16 @@
       "links": {},
       "address": "0x43c85D6abde5050142020B6CB2C99497B86f5598",
       "transactionHash": "0x6e995145ef1b54d76130b6f2c3ca70a237608a05f658e91128f785a8c5af8f23"
+    },
+    "1579448737571": {
+      "events": {},
+      "links": {},
+      "address": "0x1c0FEe30Fd783Ea6927F8a480e86f446A89Facb1",
+      "transactionHash": "0x19e529009f146aba8e692cdd2c09da1bdb3cfeca4c063f216fec07d043b968c9"
     }
   },
   "schemaVersion": "3.0.16",
-  "updatedAt": "2020-01-17T17:23:04.720Z",
+  "updatedAt": "2020-01-19T15:45:45.094Z",
   "devdoc": {
     "author": "Mustafa Al-Bassam (mus@musalbas.com)",
     "details": "Homepage: https://github.com/musalbas/solidity-BN256G2",
