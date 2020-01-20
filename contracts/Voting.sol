@@ -17,10 +17,10 @@ contract Voting is Verifier {
 
   bytes32[] public candidateList;
 
-  /* This is the constructor which will be called once when you
-  deploy the contract to the blockchain. When we deploy the contract,
-  we will pass an array of candidates who will be contesting in the election
-  */
+  // withdraw tocken variables 
+  mapping (address => bool) votingRecord;
+  event logWithdrawal(address receiver, uint amount);
+
   constructor(bytes32[] memory candidateNames) public payable {
     candidateList = candidateNames;
   }
@@ -40,10 +40,19 @@ contract Voting is Verifier {
     uint[2] memory c,
     uint[3] memory input
   ) public payable returns (bool) {
-    require(validCandidate(candidate), "Invalid candidate name");
     require(verifyTx(a, b, c, input), "Incorrect proof given");
+    votingRecord[msg.sender] = true;
+    require(validCandidate(candidate), "Invalid candidate name");
     votesReceived[candidate] += 1;
-    msg.sender.transfer(1);
+    withdraw(msg.sender, 1 szabo);
+    return true;
+  }
+
+  function withdraw(address payable voter, uint amount) internal returns (bool success) {
+    if (address(this).balance < amount && votingRecord[voter] != true) return false;
+    votingRecord[voter] = false;
+    voter.transfer(amount);
+    emit logWithdrawal(voter, amount);
     return true;
   }
 

@@ -9,5 +9,5 @@ module.exports = function(deployer) {
   deployer.link(BN256G2, Verifier);
   deployer.deploy(Verifier);
   deployer.link(BN256G2, Voting);
-  deployer.deploy(Voting, ['Rama', 'Nick', 'Jose'].map((candidate) => web3.utils.asciiToHex(candidate)), { value: 1000000000, gas: 6700000});
+  deployer.deploy(Voting, ['Rama', 'Nick', 'Jose'].map((candidate) => web3.utils.asciiToHex(candidate)), { value: 1000000000000000, gas: 6700000});
 };
