@@ -23,6 +23,7 @@ const App = {
       const accounts = await web3.eth.getAccounts();
       this.account = accounts[0];
       this.getVotes();
+      this.getBudget();
 
     } catch (error) {
       console.error("Could not connect to contract or chain.");
@@ -33,7 +34,9 @@ const App = {
     const { totalVotesFor } = this.meta.methods;
     const balanceTable = document.getElementById("voteTable");
 
-    const results = await Promise.all(this.candidates.map((candidate) => totalVotesFor(Web3.utils.asciiToHex(candidate)).call()))
+    const results = await Promise.all(this.candidates.map((candidate) => totalVotesFor(Web3.utils.asciiToHex(candidate)).call()));
+    console.log(this.candidates.map((candidate) => Web3.utils.asciiToHex(candidate)));
+    console.log(this.candidates.map((candidate) => Web3.utils.utf8ToHex(candidate)));
     balanceTable.innerHTML = '';
     let rowNum = 0;
     for (const votes of results) {
@@ -46,20 +49,35 @@ const App = {
     }
   },
 
+  getBudget: async function() {
+    const { getBalance } = this.meta.methods;
+    const budgetDiv = document.getElementById("budget");
+    const budget = await getBalance().call();
+    budgetDiv.innerHTML = budget;
+  },
+
   voteFor: async function() {
-    const input = document.getElementById("candidate");
-    const candidate = input.value;
-    console.log(candidate, this.candidates);
+    try {
+      const zkProof = JSON.parse(document.getElementById("proof").value); 
+      var { proof, inputs } = zkProof;
+      var { a, b, c } = proof;
+    } catch (error) {
+      this.setStatus(`Wrong input for proof at ${error}`);
+      return -1;
+    }
+
+    const candidate = document.getElementById("candidate").value;
     if (this.candidates.includes(candidate)) {
       this.setStatus('Your vote is being processed, have some patience');
       const { voteForCandidate } = this.meta.methods;
-      await voteForCandidate(Web3.utils.asciiToHex(candidate)).send({ from: this.account });
+      await voteForCandidate(Web3.utils.asciiToHex(candidate), a, b, c, inputs).send({ from: this.account });
       this.setStatus('Your vote has been processed');
     } else {
       this.setStatus(`Wrong candidate. Please choose between ${this.candidates}`);
     }
 
     await this.getVotes();
+    await this.getBudget();
   },
 
   setStatus: function(message) {
