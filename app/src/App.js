@@ -20,7 +20,7 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = { 
-      status: 'Hi!',
+      status: '',
     };
     this.zk_proving_key = this.loadZK();
     if (window.ethereum) {
