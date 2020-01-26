@@ -23,7 +23,7 @@ start Dapp (webpack):
 
 migrate smart contracts:
 
-    $ truffle migrate --network ganache
+    $ truffle migrate --network ganache --contracts_build_directory="./react_app/src/build/contracts"
 
 blockchain console:
 
@@ -35,6 +35,7 @@ use ganache account on metamask:
 2. click recover account with Mnemonic phase
 3. insert new password (12345678)
 4. choose network ganache local on browser
+5. import one of ganaches private keys
 
 # Generate New zk-proof
 
@@ -44,7 +45,7 @@ start zokrates container:
 
 on a new window check container id with:
 
-		$ docker container ls
+	$ docker container ls
 
 copy .zok file necessary for proof:
 
@@ -64,6 +65,6 @@ compile proof with secure backend:
 
 export proof and contract from container:
 
-		$ docker cp <CONTAINER_ID>:./home/zokrates/proof.json ./zk-proof/valid_proof.json
+	$ docker cp <CONTAINER_ID>:./home/zokrates/proof.json ./zk-proof/valid_proof.json
 
-		$ docker cp <CONTAINER_ID>:./home/zokrates/verifier.sol ./contracts/verifier.sol
+	$ docker cp <CONTAINER_ID>:./home/zokrates/verifier.sol ./contracts/verifier.sol
