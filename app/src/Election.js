@@ -15,7 +15,7 @@ import compZK from './build/zk-proof/out';
 // }
 
 
-class App extends React.Component {
+class Election extends React.Component {
 
   constructor(props) {
     super(props);
@@ -160,4 +160,4 @@ class App extends React.Component {
 }
 
   
-export default App;
+export default Election;
