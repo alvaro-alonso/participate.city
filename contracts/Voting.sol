@@ -17,7 +17,7 @@ contract Voting is Verifier {
 
   bytes32[] public candidateList;
 
-  // withdraw tocken variables 
+  // withdraw tocken variables
   mapping (address => bool) votingRecord;
   event logWithdrawal(address receiver, uint amount);
 
@@ -25,8 +25,12 @@ contract Voting is Verifier {
     candidateList = candidateNames;
   }
 
+  function getCandidates() public returns (bytes32[] memory) {
+    return candidateList;
+  }
+
   // This function returns the total votes a candidate has received so far
-  function totalVotesFor(bytes32 candidate) public view returns (uint256) {
+  function totalVotesFor(bytes32 candidate) public returns (uint256) {
     require(validCandidate(candidate), "Invalid candidate name");
     return votesReceived[candidate];
   }
