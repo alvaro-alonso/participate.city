@@ -1,24 +1,19 @@
 import React from 'react';
 import { initialize } from 'zokrates-js';
 import Web3 from "web3";
-import VotingArtifact from "./build/contracts/Voting.json";
+import { withRouter } from "react-router";
 
+import VotingArtifact from "./build/contracts/Voting.json";
 import './App.css';
 import compZK from './build/zk-proof/out';
 
-// function authenticate() {
-//   const element = <div >
-//     <input type="text" id="candidate" placeholder="choose a candidate" />
-//     <input type="text" id="proof" placeholder="insert proof" />
-//   </div>;
-//   ReactDOM.render(element, document.getElementById("actions"))
-// }
 
 
 class Election extends React.Component {
 
   constructor(props) {
     super(props);
+    this.address = this.props.match.params.id;
     this.state = { 
       status: '',
     };
@@ -50,7 +45,7 @@ class Election extends React.Component {
       console.log(`network: ${networkId}\ndeployedNetwork: ${deployedNetwork}`);
       this.meta = new this.web3.eth.Contract(
         VotingArtifact.abi,
-        deployedNetwork.address,
+        this.address,
       );
 
       // get accounts
@@ -160,4 +155,4 @@ class Election extends React.Component {
 }
 
   
-export default Election;
+export default withRouter(Election);

@@ -1,7 +1,15 @@
 import React from 'react';
 import Web3 from "web3";
-import Artifact from "./build/contracts/ElectionRegistry.json";
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Link,
+  // useParams
+} from "react-router-dom";
 
+import Election from "./Election";
+import Artifact from "./build/contracts/ElectionRegistry.json";
 import './App.css';
 
 
@@ -49,7 +57,7 @@ class Finder extends React.Component {
       return this.state.searchResults.map((election) => {
         const link = `/election/${election}`
         return (<tr key={election}>
-          <td><a href={link}>{election}</a></td>
+          <td><Link to={link}>{election}</Link></td>
         </tr>);
       });
     } else {
@@ -81,24 +89,29 @@ class Finder extends React.Component {
 
   render() {
     return (
-      <div>
-        <h1>Voting App — Finder</h1>
+      <Router>
+        <div>
+          <h1>Voting App — Finder</h1>
 
-        <p>{this.state.status}</p>
+          <p>{this.state.status}</p>
 
-        <div className="container" id="actions">
-          <input type="text" id="institutionFinder" placeholder="search for an institution" />
-          <button onClick={this.search.bind(this)}>Search</button>
+          <div className="container" id="actions">
+            <input type="text" id="institutionFinder" placeholder="search for an institution" />
+            <button onClick={this.search.bind(this)}>Search</button>
+          </div>
+
+          <div className="table-responsive">
+            <table id="resultsTable" className="table table-bordered">
+              <tbody>
+                {this.showElections()}
+              </tbody>
+            </table>
+          </div>
+          <Switch>
+            <Route path="/election/:id" children={<Election />} />
+          </Switch>
         </div>
-
-        <div className="table-responsive">
-          <table id="resultsTable" className="table table-bordered">
-            <tbody>
-              {this.showElections()}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      </Router>
     );
   }
 }
