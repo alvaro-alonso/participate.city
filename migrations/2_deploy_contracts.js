@@ -4,13 +4,18 @@ const Pairing = artifacts.require('Pairing');
 const Verifier = artifacts.require('Verifier');
 const Register = artifacts.require('ElectionRegistry');
 
+const toHex = (candidates) => candidates.map((cand) => web3.utils.asciiToHex(cand));
+const candidates1 = ['Rama', 'Nick', 'Jose'];
+const candidates2 = ['Vishnu', 'Jon', 'Maria'];
+const setup = { value: 1000000000000000, gas: 6700000 };
+
 module.exports = async function(deployer) {
   deployer.deploy(BN256G2);
   deployer.deploy(Pairing);
   deployer.link(BN256G2, Verifier);
   deployer.deploy(Verifier);
   deployer.link(BN256G2, Voting);
-  deployer.deploy(Register)//.then(() => {
-  deployer.deploy(Voting, ['Rama', 'Nick', 'Jose'].map((candidate) => web3.utils.asciiToHex(candidate)), Register.address, { value: 1000000000000000, gas: 6700000});
-  // });
+  await deployer.deploy(Register);
+  await deployer.deploy(Voting, toHex(candidates1), Register.address, setup);
+  await deployer.deploy(Voting, toHex(candidates2), Register.address, setup);
 };

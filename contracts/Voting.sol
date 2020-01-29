@@ -26,7 +26,7 @@ contract Voting is Verifier {
   constructor(bytes32[] memory candidateNames, address registryAdd) public payable {
     candidateList = candidateNames;
     registry = ElectionRegistry(registryAdd);
-    registry.register(address(this));
+    registry.register(msg.sender, address(this));
   }
 
   function getCandidates() public returns (bytes32[] memory) {
