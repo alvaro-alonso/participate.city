@@ -8,7 +8,7 @@ import * as serviceWorker from './serviceWorker';
 
 ReactDOM.render(<>
   <Finder />
-  <Election />
+  {/* <Election /> */}
 </>, document.getElementById('root'));
 
 // If you want your app to work offline and load faster, you can change
