@@ -2,6 +2,7 @@ pragma solidity >=0.4.0 <0.6.0;
 // We have to specify what version of compiler this code will compile with
 
 import './verifier.sol';
+import './ElectionRegistry.sol';
 
 contract Voting is Verifier {
   /* mapping field below is equivalent to an associative array or hash.
@@ -16,13 +17,16 @@ contract Voting is Verifier {
   */
 
   bytes32[] public candidateList;
+  ElectionRegistry public registry;
 
   // withdraw tocken variables
   mapping (address => bool) votingRecord;
   event logWithdrawal(address receiver, uint amount);
 
-  constructor(bytes32[] memory candidateNames) public payable {
+  constructor(bytes32[] memory candidateNames, address registryAdd) public payable {
     candidateList = candidateNames;
+    registry = ElectionRegistry(registryAdd);
+    registry.register(msg.sender, address(this));
   }
 
   function getCandidates() public returns (bytes32[] memory) {
