@@ -1,7 +1,7 @@
 import React from 'react';
 import { initialize } from 'zokrates-js';
 import Web3 from "web3";
-import { withRouter, Redirect } from "react-router";
+import { withRouter } from "react-router";
 import { Link } from "react-router-dom";
 
 import VotingArtifact from "./build/contracts/Voting.json";
@@ -126,10 +126,6 @@ class Election extends React.Component {
 
     this.getVotes();
     this.getBudget();
-  }
-
-  refreshPage() { 
-    return window.location.reload().then(() => <Redirect to='/' />)
   }
 
   render () {
