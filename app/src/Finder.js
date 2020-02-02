@@ -68,12 +68,14 @@ class Finder extends React.Component {
 
   async search() {
 
-    const institution = document.getElementById("institutionFinder").value;
+    const inputSearchField = document.getElementById("institutionFinder")
+    const institution = inputSearchField.value;
+
     if (institution) {
       this.setState({
         status: 'Your vote is being processed, have some patience',
         searchedAccount: institution,
-        searched: '',
+        searched: null,
       });
       const { findContract } = this.meta.methods;
       const searchResults = await findContract(institution).call()
@@ -111,7 +113,7 @@ class Finder extends React.Component {
           <p>{this.state.status}</p>
 
           <div className="container" id="actions">
-            <input type="text" id="institutionFinder" value={this.state.searched} placeholder="search for an institution" />
+            <input type="text" id="institutionFinder" value={this.state.searched} placeholder="search for an institution" onFocus="this.state.searched=''"/>
             <button onClick={this.search.bind(this)}>Search</button>
           </div>
 
