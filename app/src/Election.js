@@ -2,6 +2,7 @@ import React from 'react';
 import { initialize } from 'zokrates-js';
 import Web3 from "web3";
 import { withRouter } from "react-router";
+import { Link } from "react-router-dom";
 
 import VotingArtifact from "./build/contracts/Voting.json";
 import './App.css';
@@ -145,9 +146,11 @@ class Election extends React.Component {
 
         <div className="container" id="actions">
 
-        <input type="text" id="candidate" placeholder="choose a candidate" />
-        <input type="text" id="proof" placeholder="insert proof" />
-        <button onClick={this.voteFor.bind(this)} >Vote</button>
+          <input type="text" id="candidate" placeholder="choose a candidate" />
+          <input type="text" id="proof" placeholder="insert proof" />
+          <button onClick={this.voteFor.bind(this)} >Vote</button>
+          <Link to="/" ><button>Home</button></Link>
+
         </div>
       </div>
     );
