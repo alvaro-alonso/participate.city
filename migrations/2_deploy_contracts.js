@@ -15,7 +15,8 @@ module.exports = async function(deployer) {
   deployer.link(BN256G2, Verifier);
   deployer.deploy(Verifier);
   deployer.link(BN256G2, Voting);
-  await deployer.deploy(Register);
-  await deployer.deploy(Voting, toHex(candidates1), Register.address, setup);
-  await deployer.deploy(Voting, toHex(candidates2), Register.address, setup);
+  deployer.link(BN256G2, Register);
+  deployer.deploy(Register);
+  // deployer.deploy(Voting, toHex(candidates1), setup);
+  // deployer.deploy(Voting, toHex(candidates2), setup);
 };
