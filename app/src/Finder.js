@@ -9,6 +9,7 @@ import {
 } from "react-router-dom";
 
 import Election from "./Election";
+import Deployer from "./Deployer";
 import Artifact from "./build/contracts/ElectionRegistry.json";
 import './App.css';
 
@@ -38,10 +39,12 @@ class Finder extends React.Component {
       const networkId = await this.web3.eth.net.getId();
       const deployedNetwork = Artifact.networks[networkId];
       console.log(`network: ${networkId}\ndeployedNetwork: ${deployedNetwork}`);
-      this.meta = new this.web3.eth.Contract(
-        Artifact.abi,
-        deployedNetwork.address,
-      );
+      this.setState({
+        meta: new this.web3.eth.Contract(
+          Artifact.abi,
+          deployedNetwork.address,
+        ),
+      });
 
       // get accounts
       const accounts = await this.web3.eth.getAccounts();
@@ -77,7 +80,7 @@ class Finder extends React.Component {
         searchedAccount: institution,
         searched: null,
       });
-      const { findContract } = this.meta.methods;
+      const { findContract } = this.state.meta.methods;
       const searchResults = await findContract(institution).call()
       if(searchResults && searchResults.length > 0) {
         this.setState({
@@ -105,19 +108,28 @@ class Finder extends React.Component {
   }
 
   render() {
-    const { hide } = this.state;
+    const {
+      hide,
+      meta,
+      resultNumber,
+      searchResults,
+      searchedAccount,
+      searched
+    } = this.state;
     const finder = <>
       <div>
           <h1>Voting App — Finder</h1>
 
+          <Link to="/deploy_election"><button>create election</button></Link>
+
           <p>{this.state.status}</p>
 
           <div className="container" id="actions">
-            <input type="text" id="institutionFinder" value={this.state.searched} placeholder="search for an institution" onFocus="this.state.searched=''"/>
+            <input type="text" id="institutionFinder" value={searched} placeholder="search for an institution"/>
             <button onClick={this.search.bind(this)}>Search</button>
           </div>
 
-          <p>{ this.state.searchResults ? `${this.state.resultNumber} results for account: ${this.state.searchedAccount}` : '' }</p>
+          <p>{ searchResults ? `${resultNumber} results for account: ${searchedAccount}` : '' }</p>
           <div className="table-responsive">
             <table id="resultsTable" className="table table-bordered">
               <tbody>
@@ -135,8 +147,8 @@ class Finder extends React.Component {
         <div>
           <Switch>
             <Route path="/election/:id" children={<Election />} ></Route>
+            <Route path="/deploy_election" children={<Deployer meta={meta}/>}></Route>
             <Route path="/" onClick={this.showFinder.bind(this)} ></Route>
-            {/* <Route path="/election/:id" render={(props) => <Election {...props} showFinder={this.showFinder.bind(this)}/>}></Route>} */}
           </Switch>
         </div>
       </Router>
