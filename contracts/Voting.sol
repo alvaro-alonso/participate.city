@@ -3,31 +3,6 @@ pragma solidity >=0.4.0 <0.6.0;
 
 import './verifier.sol';
 
-contract ElectionRegistry {
-  mapping(address => address[]) user_elections;
-  event logRegistration(address election);
-  
-  function register(address owner, address election) public {
-    user_elections[owner].push(election); // -1 is very important
-    emit logRegistration(election);
-  }
-
-  function findContract(address user) public returns (address[] memory){
-    return user_elections[user];
-  }
-  
-  function deployElection(bytes32[] memory candidates, uint64 budget) public payable returns (address Election) {
-    require(msg.value >= budget, "Insuficient funds sent to election");
-    Voting election = (new Voting).value(budget)(candidates);
-    address electionAdd = address(election);
-    register(msg.sender, electionAdd);
-    return electionAdd;
-  }
-  
-  function getBalance() public view returns (uint) {
-    return address(this).balance;
-  }
-}
 
 contract Voting is Verifier {
   /* mapping field below is equivalent to an associative array or hash.
@@ -42,16 +17,16 @@ contract Voting is Verifier {
   */
 
   bytes32[] public candidateList;
-  ElectionRegistry public registry;
+  // ElectionRegistry public registry;
 
   // withdraw tocken variables
   mapping (address => bool) votingRecord;
   event logWithdrawal(address receiver, uint amount);
 
-  constructor(bytes32[] memory candidateNames, address registryAdd) public payable {
+  constructor(bytes32[] memory candidateNames) public payable {
     candidateList = candidateNames;
-    registry = ElectionRegistry(registryAdd);
-    registry.register(msg.sender, address(this));
+    // registry = ElectionRegistry(registryAdd);
+    // registry.register(msg.sender, address(this));
   }
 
   function getCandidates() public returns (bytes32[] memory) {

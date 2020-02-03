@@ -39,16 +39,15 @@ class Finder extends React.Component {
       const networkId = await this.web3.eth.net.getId();
       const deployedNetwork = Artifact.networks[networkId];
       console.log(`network: ${networkId}\ndeployedNetwork: ${deployedNetwork}`);
+      // get accounts
+      const accounts = await this.web3.eth.getAccounts();
       this.setState({
         meta: new this.web3.eth.Contract(
           Artifact.abi,
           deployedNetwork.address,
         ),
+        account: accounts[0],
       });
-
-      // get accounts
-      const accounts = await this.web3.eth.getAccounts();
-      this.account = accounts[0];
 
     } catch (error) {
       console.error("Could not connect to contract or chain.");
@@ -76,25 +75,19 @@ class Finder extends React.Component {
 
     if (institution) {
       this.setState({
-        status: 'Your vote is being processed, have some patience',
+        status: 'Searching...',
         searchedAccount: institution,
-        searched: null,
+        searched: '',
       });
       const { findContract } = this.state.meta.methods;
       const searchResults = await findContract(institution).call()
-      if(searchResults && searchResults.length > 0) {
-        this.setState({
-          status: '',
-          searchResults,
-          resultNumber: searchResults.length,
-        });
-        this.showElections();
-      } else {
-        this.setState({ 
-          status: `No search results found for address: ${this}`,
-          resultNumber: 0,
-        })
-      }
+
+      this.setState({
+        status: '',
+        searchResults,
+        resultNumber: searchResults.length,
+      });
+      this.showElections();
     } 
 
   }
@@ -107,10 +100,15 @@ class Finder extends React.Component {
     this.setState({ hide: false });
   }
 
+  updateSearchBox(event) {
+    this.setState({searched : event.target.value});
+  }
+
   render() {
     const {
       hide,
       meta,
+      account,
       resultNumber,
       searchResults,
       searchedAccount,
@@ -125,7 +123,7 @@ class Finder extends React.Component {
           <p>{this.state.status}</p>
 
           <div className="container" id="actions">
-            <input type="text" id="institutionFinder" value={searched} placeholder="search for an institution"/>
+            <input type="text" id="institutionFinder" value={searched} onChange={this.updateSearchBox.bind(this)} placeholder="search for an institution"/>
             <button onClick={this.search.bind(this)}>Search</button>
           </div>
 
@@ -147,7 +145,7 @@ class Finder extends React.Component {
         <div>
           <Switch>
             <Route path="/election/:id" children={<Election />} ></Route>
-            <Route path="/deploy_election" children={<Deployer meta={meta}/>}></Route>
+            <Route path="/deploy_election" children={<Deployer meta={meta} account={account} />}></Route>
             <Route path="/" onClick={this.showFinder.bind(this)} ></Route>
           </Switch>
         </div>

@@ -1,4 +1,5 @@
 import React from 'react';
+import Web3 from "web3";
 import { Link } from "react-router-dom";
 
 import './App.css';
@@ -9,6 +10,7 @@ class Deployer extends React.Component {
   constructor(props) {
     super(props);
     this.meta = props.meta;
+    this.account = props.account;
     this.state = { 
       status: '',
       candidates: [],
@@ -48,7 +50,9 @@ class Deployer extends React.Component {
     const { budget, candidates } = this.state;
     const { deployElection } = this.meta.methods;
     if (budget && candidates.length > 0) {
-      await deployElection(candidates, budget);
+      const hexCandidates = candidates.map((candidate) => Web3.utils.asciiToHex(candidate));
+      const electionAdd = await deployElection(hexCandidates, budget).send({ from: this.account, value: budget});
+      console.log(electionAdd);
     }
   }
 
@@ -61,7 +65,7 @@ class Deployer extends React.Component {
 
         <div className="container">
           <p>election budget:</p>
-          <input type="text" id="budget" onChange={this.updateBudget.bind(this)} placeholder="elections budget"></input>
+          <input type="text" id="budget" value={this.state.budget} onChange={this.updateBudget.bind(this)} placeholder="elections budget"></input>
         </div>
 
         <div className="container" id="candidates">
