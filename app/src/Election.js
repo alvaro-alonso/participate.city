@@ -31,10 +31,9 @@ class Election extends React.Component {
   }
 
   async loadZK() {
-    initialize().then(async (zokrates) => {
-      const { 1: proving_key } = await zokrates.setup(compZK);
-      console.log(proving_key);
-      return proving_key;
+    initialize().then(async (zokratesProvider) => {
+      // we have to initialize the wasm module before calling api functions
+      await zokratesProvider.setup(compZK);
     });
   }
 

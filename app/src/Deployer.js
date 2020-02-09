@@ -1,6 +1,8 @@
 import React from 'react';
 import Web3 from "web3";
 import { Link } from "react-router-dom";
+import merkleTree from "merkle-lib";
+import SHA256 from "crypto-js/sha256";
 
 import './App.css';
 
@@ -14,12 +16,17 @@ class Deployer extends React.Component {
     this.state = { 
       status: '',
       candidates: [],
+      voters: [],
     };
     console.log(props);
   }
 
-  updateCandidate(event){
-    this.setState({inputedCandidate : event.target.value})
+  updateCandidateField(event){
+    this.setState({insertedCandidate : event.target.value})
+  }
+
+  updateVoterField(event){
+    this.setState({insertedVoter : event.target.value})
   }
 
   updateBudget(event){
@@ -37,12 +44,20 @@ class Deployer extends React.Component {
   }
 
   addCandidate() {
-    let { inputedCandidate, candidates } = this.state;
-    console.log(inputedCandidate, candidates);
-    candidates.push(inputedCandidate);
+    let { insertedCandidate, candidates } = this.state;
+    candidates.push(insertedCandidate);
     this.setState({
       candidates,
-      inputedCandidate: '',
+      insertedCandidate: '',
+    });
+  }
+
+  addVoter() {
+    let { insertedVoter, voters } = this.state;
+    voters.push(insertedVoter);
+    this.setState({
+      voters,
+      insertedVoter: '',
     });
   }
 
@@ -51,8 +66,15 @@ class Deployer extends React.Component {
     const { deployElection } = this.meta.methods;
     if (budget && candidates.length > 0) {
       const hexCandidates = candidates.map((candidate) => Web3.utils.asciiToHex(candidate));
-      const electionAdd = await deployElection(hexCandidates, budget).send({ from: this.account, value: budget});
-      console.log(electionAdd);
+      const hashedVoter = this.state.voters.map((voter) => Web3.utils.sha3(voter));
+      const tree = merkleTree(hashedVoter.map(x => new Buffer(x, 'hex')), SHA256);
+      const treeStr = tree.map(x => x.toString());
+      const root = treeStr[treeStr.length - 1];
+      const electionAdd = await deployElection(hexCandidates, budget, root, hashedVoter).send({ from: this.account, value: budget});
+      console.log(this.state.voters);
+      console.log(hashedVoter);
+      console.log(treeStr);
+      console.log(`election deployed at: ${electionAdd}`);
     }
   }
 
@@ -64,15 +86,22 @@ class Deployer extends React.Component {
         <p>{this.state.status}</p>
 
         <div className="container">
-          <p>election budget:</p>
+          <p>Election budget:</p>
           <input type="text" id="budget" value={this.state.budget} onChange={this.updateBudget.bind(this)} placeholder="elections budget"></input>
         </div>
 
         <div className="container" id="candidates">
-          <p>candidates</p>
-          <input type="text" id="candidate" value={this.state.inputedCandidate} onChange={this.updateCandidate.bind(this)} placeholder="choose a candidate" />
+          <p>Candidates</p>
+          <input type="text" id="candidate" value={this.state.insertedCandidate} onChange={this.updateCandidateField.bind(this)} placeholder="insert candidate" />
           <button onClick={this.addCandidate.bind(this)}>add</button>
           {this.state.candidates.length > 0? <ul>{this.state.candidates.map(candidate => <li key={candidate}>{candidate}</li>)}</ul> : null}
+        </div>
+
+        <div className="container" id="voters">
+          <p>Voters</p>
+          <input type="text" id="voters" value={this.state.insertedVoter} onChange={this.updateVoterField.bind(this)} placeholder="insert voter" />
+          <button onClick={this.addVoter.bind(this)}>add</button>
+          {this.state.voters.length > 0? <ul>{this.state.voters.map(voter => <li key={voter}>{voter}</li>)}</ul> : null}
         </div>
 
         <button onClick={this.deploy.bind(this)}>Deploy</button>
