@@ -3,8 +3,10 @@ import Web3 from "web3";
 import { Link } from "react-router-dom";
 import merkleTree from "merkle-lib";
 import SHA256 from "crypto-js/sha256";
+import { initialize } from 'zokrates-js';
 
 import './App.css';
+import generateZokratesProof from './lib/zokratesProofGeneration';
 
 
 class Deployer extends React.Component {
@@ -62,18 +64,20 @@ class Deployer extends React.Component {
   }
 
   async deploy() {
-    const { budget, candidates } = this.state;
+    const { budget, candidates, voters } = this.state;
     const { deployElection } = this.meta.methods;
-    if (budget && candidates.length > 0) {
+    if (budget && candidates.length > 0 && voters.length > 0) {
       const hexCandidates = candidates.map((candidate) => Web3.utils.asciiToHex(candidate));
-      const hashedVoter = this.state.voters.map((voter) => Web3.utils.sha3(voter));
+      const hashedVoter = voters.map((voter) => Web3.utils.sha3(voter));
       const tree = merkleTree(hashedVoter.map(x => new Buffer(x, 'hex')), SHA256);
-      const treeStr = tree.map(x => x.toString());
-      const root = treeStr[treeStr.length - 1];
+      const root = Web3.utils.bytesToHex(tree[tree.length - 1]);
+      const proofZok = generateZokratesProof(voters.length, Web3.utils.hexToNumberString(root));
+      console.log(proofZok);
+      initialize().then(async (zokratesProv) => {
+        const proof = await zokratesProv.compile(proofZok, "main");
+        console.log(proof);
+      })
       const electionAdd = await deployElection(hexCandidates, budget, root, hashedVoter).send({ from: this.account, value: budget});
-      console.log(this.state.voters);
-      console.log(hashedVoter);
-      console.log(treeStr);
       console.log(`election deployed at: ${electionAdd}`);
     }
   }
