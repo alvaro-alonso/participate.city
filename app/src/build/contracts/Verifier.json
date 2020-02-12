@@ -73976,10 +73976,54 @@
       },
       "address": "0x23146a801ebdFFCed374702BB4cc258AD45b6DeF",
       "transactionHash": "0xadc839eba38f345d25f5814b9f801766ece6037f408b497b75f75275ccdc927e"
+    },
+    "1581280418447": {
+      "events": {
+        "0x3f3cfdb26fb5f9f1786ab4f1a1f9cd4c0b5e726cbdfc26e495261731aad44e39": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "name": "s",
+              "type": "string"
+            }
+          ],
+          "name": "Verified",
+          "type": "event",
+          "signature": "0x3f3cfdb26fb5f9f1786ab4f1a1f9cd4c0b5e726cbdfc26e495261731aad44e39"
+        }
+      },
+      "links": {
+        "BN256G2": "0xEcD3bB6792Cb77010598610E598F1e8fd04342fF"
+      },
+      "address": "0x36d9DEADd1AEa9355D4CffA6b0BDD48Af5AFD103",
+      "transactionHash": "0xbc50886a7828ea7a1118d555d5c72a112f8d2377f48db7cbc215a59cf7a3a8ef"
+    },
+    "1581499009697": {
+      "events": {
+        "0x3f3cfdb26fb5f9f1786ab4f1a1f9cd4c0b5e726cbdfc26e495261731aad44e39": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "name": "s",
+              "type": "string"
+            }
+          ],
+          "name": "Verified",
+          "type": "event",
+          "signature": "0x3f3cfdb26fb5f9f1786ab4f1a1f9cd4c0b5e726cbdfc26e495261731aad44e39"
+        }
+      },
+      "links": {
+        "BN256G2": "0xB53003055A9c0852e2c242d1F8Cb05eCf9B222b0"
+      },
+      "address": "0x415a28697730d2d42cC44e5a0dC4CE7ccaB7e130",
+      "transactionHash": "0x27d7db213de266b519806f8f9887c26957ffdd20b294ad9601751487fdf79079"
     }
   },
   "schemaVersion": "3.0.16",
-  "updatedAt": "2020-02-03T16:02:22.376Z",
+  "updatedAt": "2020-02-12T09:50:02.034Z",
   "devdoc": {
     "methods": {}
   },

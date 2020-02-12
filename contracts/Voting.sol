@@ -16,17 +16,18 @@ contract Voting is Verifier {
   We will use an array of bytes32 instead to store the list of candidates
   */
 
+  bytes32 public merkleRoot;
   bytes32[] public candidateList;
-  // ElectionRegistry public registry;
+  bytes32[] public voters;
 
   // withdraw tocken variables
   mapping (address => bool) votingRecord;
   event logWithdrawal(address receiver, uint amount);
 
-  constructor(bytes32[] memory candidateNames) public payable {
+  constructor(bytes32 root, bytes32[] memory registry, bytes32[] memory candidateNames) public payable {
+    merkleRoot = root;
+    voters = registry;
     candidateList = candidateNames;
-    // registry = ElectionRegistry(registryAdd);
-    // registry.register(msg.sender, address(this));
   }
 
   function getCandidates() public returns (bytes32[] memory) {
