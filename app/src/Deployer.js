@@ -74,8 +74,13 @@ class Deployer extends React.Component {
       const proofZok = generateZokratesProof(voters.length, Web3.utils.hexToNumberString(root));
       console.log(proofZok);
       initialize().then(async (zokratesProv) => {
-        const proof = await zokratesProv.compile(proofZok, "main");
+        const proof = await zokratesProv.compile("def main(private field a) -> (field): return a", "main", () => {});
+        console.log(zokratesProv)
         console.log(proof);
+        const setup = await zokratesProv.setup(proof.program);
+        console.log(setup);
+        const verifier = zokratesProv.exportSolidityVerifier(setup.vk, true);
+        console.log(verifier);
       })
       const electionAdd = await deployElection(hexCandidates, budget, root, hashedVoter).send({ from: this.account, value: budget});
       console.log(`election deployed at: ${electionAdd}`);
