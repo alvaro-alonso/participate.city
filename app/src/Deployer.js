@@ -4,6 +4,8 @@ import { Link } from "react-router-dom";
 import merkleTree from "merkle-lib";
 import SHA256 from "crypto-js/sha256";
 import { initialize } from 'zokrates-js';
+import * as wrapper from 'solc/wrapper';
+import VotingArtifact from "./build/contracts/Voting.json";
 
 import './App.css';
 import generateZokratesProof from './lib/zokratesProofGeneration';
@@ -13,6 +15,7 @@ class Deployer extends React.Component {
 
   constructor(props) {
     super(props);
+    this.web3 = props.web3;
     this.meta = props.meta;
     this.account = props.account;
     this.state = { 
@@ -65,25 +68,78 @@ class Deployer extends React.Component {
 
   async deploy() {
     const { budget, candidates, voters } = this.state;
-    const { deployElection } = this.meta.methods;
+    // const { deployElection } = this.meta.methods;
     if (budget && candidates.length > 0 && voters.length > 0) {
-      const hexCandidates = candidates.map((candidate) => Web3.utils.asciiToHex(candidate));
+      // const hexCandidates = candidates.map((candidate) => Web3.utils.asciiToHex(candidate));
       const hashedVoter = voters.map((voter) => Web3.utils.sha3(voter));
       const tree = merkleTree(hashedVoter.map(x => new Buffer(x, 'hex')), SHA256);
-      const root = Web3.utils.bytesToHex(tree[tree.length - 1]);
-      const proofZok = generateZokratesProof(voters.length, Web3.utils.hexToNumberString(root));
+      const root = Web3.utils.bytesToHex(tree[tree.length - 1].words);
+      const rootArray = parseInt(root, 16).toString(2).split('').map(x => parseInt(x));
+      rootArray.unshift(0);
+      console.log(rootArray);
+      const proofZok = generateZokratesProof(voters.length, rootArray);
       console.log(proofZok);
-      initialize().then(async (zokratesProv) => {
-        const proof = await zokratesProv.compile("def main(private field a) -> (field): return a", "main", () => {});
-        console.log(zokratesProv)
-        console.log(proof);
-        const setup = await zokratesProv.setup(proof.program);
-        console.log(setup);
-        const verifier = zokratesProv.exportSolidityVerifier(setup.vk, true);
-        console.log(verifier);
+      const zokratesProv = await initialize()
+      // use proofZok in production
+      const proof = await zokratesProv.compile("def main(private field a) -> (field): return a", "main", () => {});
+      console.log(zokratesProv)
+      console.log(proof);
+      const setup = await zokratesProv.setup(proof.program);
+      const verifier = zokratesProv.exportSolidityVerifier(setup.vk, true);
+      console.log(verifier);
+      var input = {
+        language: 'Solidity',
+        sources: {
+          'verifier.sol': {
+            content: verifier,
+          },
+        },
+        settings: {
+          outputSelection: {
+            '*': {
+              '*': ['*']
+            }
+          }
+        } 
+      };
+      const solc = wrapper(window.Module);
+      const output = JSON.parse(solc.compile(JSON.stringify(input)));
+      const { BN256G2, Pairing, Verifier } = output.contracts["verifier.sol"]
+      console.log(output.contracts);
+      console.log(BN256G2);
+      console.log(BN256G2.abi);
+      const BNContract = new this.web3.eth.Contract(BN256G2.abi);
+      const PairingContract = new this.web3.eth.Contract(Pairing.abi);
+      const VerifierContract = new this.web3.eth.Contract(Verifier.abi);
+      const VotingContract = new this.web3.eth.Contract(VotingArtifact.abi);
+      console.log(VotingContract);
+      // VotingArtifact.bytecode
+      // arguments: [
+      //   root,
+      //   candidates.map((candidate) => Web3.utils.asciiToHex(candidate)),
+      //   voters.map((voter) => Web3.utils.asciiToHex(voter)),
+      // ],
+      BNContract.deploy({
+        data: BN256G2.evm.bytecode.object,
+
+      }).send({
+        from: this.account,
+        value: 1,
+        gasPrice: '3000000000'
       })
-      const electionAdd = await deployElection(hexCandidates, budget, root, hashedVoter).send({ from: this.account, value: budget});
-      console.log(`election deployed at: ${electionAdd}`);
+      .on('error', (error) => {
+        console.log(error)
+      })
+      .on('transactionHash', (transactionHash) => {
+        console.log(transactionHash)
+      })
+      .on('receipt', (receipt) => {
+         // receipt will contain deployed contract address
+         console.log(receipt)
+      })
+      .on('confirmation', (confirmationNumber, receipt) => {
+        console.log(receipt)
+      })
     }
   }
 

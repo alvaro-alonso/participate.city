@@ -6438,10 +6438,46 @@
       "links": {
         "BN256G2": "0xB53003055A9c0852e2c242d1F8Cb05eCf9B222b0"
       }
+    },
+    "1581976343664": {
+      "events": {
+        "0x6202b9210eddfec514dee7725e74c49be931243a5fda51c01552a5fb07e893dd": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "name": "receiver",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "name": "amount",
+              "type": "uint256"
+            }
+          ],
+          "name": "logWithdrawal",
+          "type": "event"
+        },
+        "0x3f3cfdb26fb5f9f1786ab4f1a1f9cd4c0b5e726cbdfc26e495261731aad44e39": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "name": "s",
+              "type": "string"
+            }
+          ],
+          "name": "Verified",
+          "type": "event"
+        }
+      },
+      "links": {
+        "BN256G2": "0x121C1607bdB933cD49f48F74dE10aCafFE416bd4"
+      }
     }
   },
   "schemaVersion": "3.0.16",
-  "updatedAt": "2020-02-12T09:50:01.907Z",
+  "updatedAt": "2020-02-17T21:54:04.636Z",
   "devdoc": {
     "methods": {}
   },

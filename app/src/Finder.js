@@ -27,6 +27,7 @@ class Finder extends React.Component {
       this.web3 = new Web3(window.ethereum);
       window.ethereum.enable();
       console.log('ethereum detected');
+      console.log(this.web3);
     } else {
       this.web3 = new Web3( Web3.currentProvider || "http://127.0.0.1:7545");
     }
@@ -112,7 +113,7 @@ class Finder extends React.Component {
       resultNumber,
       searchResults,
       searchedAccount,
-      searched
+      searched,
     } = this.state;
     const finder = <>
       <div>
@@ -145,7 +146,7 @@ class Finder extends React.Component {
         <div>
           <Switch>
             <Route path="/election/:id" children={<Election />} ></Route>
-            <Route path="/deploy_election" children={<Deployer meta={meta} account={account} />}></Route>
+            <Route path="/deploy_election" children={<Deployer meta={meta} account={account} web3={this.web3} />}></Route>
             <Route path="/" onClick={this.showFinder.bind(this)} ></Route>
           </Switch>
         </div>
