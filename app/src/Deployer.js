@@ -5,10 +5,9 @@ import merkleTree from "merkle-lib";
 import SHA256 from "crypto-js/sha256";
 import { initialize } from 'zokrates-js';
 import * as wrapper from 'solc/wrapper';
-import VotingArtifact from "./build/contracts/Voting.json";
 
 import './App.css';
-import generateZokratesProof from './lib/zokratesProofGeneration';
+import { generateZokratesProof, votingCode } from './lib/zokratesProofGeneration';
 
 
 class Deployer extends React.Component {
@@ -68,7 +67,6 @@ class Deployer extends React.Component {
 
   async deploy() {
     const { budget, candidates, voters } = this.state;
-    // const { deployElection } = this.meta.methods;
     if (budget && candidates.length > 0 && voters.length > 0) {
       // const hexCandidates = candidates.map((candidate) => Web3.utils.asciiToHex(candidate));
       const hashedVoter = voters.map((voter) => Web3.utils.sha3(voter));
@@ -81,7 +79,7 @@ class Deployer extends React.Component {
       console.log(proofZok);
       const zokratesProv = await initialize()
       // use proofZok in production
-      const proof = await zokratesProv.compile("def main(private field a) -> (field): return a", "main", () => {});
+      const proof = await zokratesProv.compile(proofZok, "main", () => {});
       console.log(zokratesProv)
       console.log(proof);
       const setup = await zokratesProv.setup(proof.program);
@@ -90,8 +88,8 @@ class Deployer extends React.Component {
       var input = {
         language: 'Solidity',
         sources: {
-          'verifier.sol': {
-            content: verifier,
+          'voting.sol': {
+            content: votingCode,
           },
         },
         settings: {
@@ -102,30 +100,33 @@ class Deployer extends React.Component {
           }
         } 
       };
-      const solc = wrapper(window.Module);
-      const output = JSON.parse(solc.compile(JSON.stringify(input)));
-      const { BN256G2, Pairing, Verifier } = output.contracts["verifier.sol"]
-      console.log(output.contracts);
-      console.log(BN256G2);
-      console.log(BN256G2.abi);
-      const BNContract = new this.web3.eth.Contract(BN256G2.abi);
-      const PairingContract = new this.web3.eth.Contract(Pairing.abi);
-      const VerifierContract = new this.web3.eth.Contract(Verifier.abi);
-      const VotingContract = new this.web3.eth.Contract(VotingArtifact.abi);
-      console.log(VotingContract);
-      // VotingArtifact.bytecode
-      // arguments: [
-      //   root,
-      //   candidates.map((candidate) => Web3.utils.asciiToHex(candidate)),
-      //   voters.map((voter) => Web3.utils.asciiToHex(voter)),
-      // ],
-      BNContract.deploy({
-        data: BN256G2.evm.bytecode.object,
 
+      function findImports(path) {
+        if (path === 'verifier.sol')
+          return {
+            contents: verifier,
+          };
+        else return { error: 'File not found' };
+      }
+
+      const solc = wrapper(window.Module);
+      const output = JSON.parse(solc.compile(JSON.stringify(input), {import: findImports}));
+      const { Voting } = output.contracts['voting.sol'];
+      console.log(output);
+      const VotingContract = new this.web3.eth.Contract(Voting.abi);
+      console.log(VotingContract);
+      
+      VotingContract.deploy({
+        data: '0x' + Voting.evm.bytecode.object,
+        arguments: [
+          root,
+          hashedVoter,
+          candidates.map((candidate) => Web3.utils.asciiToHex(candidate)),
+        ],
       }).send({
         from: this.account,
-        value: 1,
-        gasPrice: '3000000000'
+        value: budget,
+        gasPrice: 3000000000
       })
       .on('error', (error) => {
         console.log(error)
@@ -133,9 +134,14 @@ class Deployer extends React.Component {
       .on('transactionHash', (transactionHash) => {
         console.log(transactionHash)
       })
-      .on('receipt', (receipt) => {
-         // receipt will contain deployed contract address
-         console.log(receipt)
+      .on('receipt', async (receipt) => {
+        console.log(receipt);
+        const { register } = this.meta.methods;
+        console.log(this.meta.methods);
+        console.log(register);
+        const resp = await register(this.account, receipt.contractAddress).call();
+        console.log(resp);
+        console.log(`Election registered at: ${this.account}\nElection address: ${receipt.contractAddress}`);
       })
       .on('confirmation', (confirmationNumber, receipt) => {
         console.log(receipt)

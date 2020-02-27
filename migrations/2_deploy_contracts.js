@@ -15,8 +15,16 @@ module.exports = async function(deployer) {
   deployer.link(BN256G2, Verifier);
   deployer.deploy(Verifier);
   deployer.link(BN256G2, Voting);
-  deployer.link(BN256G2, Register);
-  deployer.deploy(Register);
-  // deployer.deploy(Voting, toHex(candidates1), setup);
-  // deployer.deploy(Voting, toHex(candidates2), setup);
+
+  await Promise.all([
+    deployer.deploy(Register),
+    deployer.deploy(Voting, '0x00', toHex(candidates1), toHex(candidates2), setup)
+  ])
+
+  const instances = await Promise.all([
+    Register.deployed(),
+    Voting.deployed()
+  ])
+  await instances[0].register('0xdbfb30d00788a02710a185dc4e4244cec9c2837c', instances[1].address);
+
 };

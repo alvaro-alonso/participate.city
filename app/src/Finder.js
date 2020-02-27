@@ -81,7 +81,7 @@ class Finder extends React.Component {
         searched: '',
       });
       const { findContract } = this.state.meta.methods;
-      const searchResults = await findContract(institution).call()
+      const searchResults = await findContract(institution).call();
 
       this.setState({
         status: '',
