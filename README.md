@@ -23,7 +23,7 @@ start Dapp (webpack):
 
 migrate smart contracts:
 
-    $ truffle migrate --network ganache --contracts_build_directory="./react_app/src/build/contracts"
+    $ truffle migrate --network ganache --contracts_build_directory="./app/src/build/contracts"
 
 blockchain console:
 

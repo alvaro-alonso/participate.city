@@ -4,15 +4,16 @@ const generateZokratesProof = (voterNumber, treeRoot) => {
   const treeDepth = Math.ceil(Math.log2(voterNumber));
   const iterations =[...Array(treeDepth).keys()];
   const treeIteration = (i) => {
-    return `multiplex(directionSelector[${i}], leafHash, pathHash${i})
-      field[256] lhs = preimage[0..256]
-      field[256] rhs = preimage[256..512]
+    return `
+      preimage = multiplex(directionSelector[${i}], currentDigest, pathHash${i})
+      lhs = preimage[0..256]
+      rhs = preimage[256..512]
       currentDigest = sha256(lhs, rhs)
     `;
   };
   const treePathGenerator = iterations.map(i => treeIteration(i)).join('');
   const treePathInputParams = iterations.map(i => `private field[2] pathDigest${i}`).join(', ');
-  const pathUnpacking = iterations.map(i => `pathHash${i} = combine(pathDigest${i})`).join('\n');
+  const pathUnpacking = iterations.map(i => `pathHash${i} = combine256(pathDigest${i})`).join('\n');
 
   return `
   import "ecc/babyjubjubParams" as context
@@ -39,11 +40,9 @@ const generateZokratesProof = (voterNumber, treeRoot) => {
       leafHash == combine256(leafDigest)
       ${pathUnpacking} 
 
-      field[256] currentDigest = leafDigest
-    
+      field[256] currentDigest = leafHash
       ${treePathGenerator}
-  
-      ${treeRoot} == currentDigest
+      [${treeRoot}] == currentDigest
 
       return 1
   `;

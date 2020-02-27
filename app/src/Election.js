@@ -1,12 +1,10 @@
 import React from 'react';
-import { initialize } from 'zokrates-js';
 import Web3 from "web3";
 import { withRouter } from "react-router";
 import { Link } from "react-router-dom";
 
 import VotingArtifact from "./build/contracts/Voting.json";
 import './App.css';
-import compZK from './build/zk-proof/out';
 
 
 
@@ -18,7 +16,6 @@ class Election extends React.Component {
     this.state = { 
       status: '',
     };
-    this.zk_proving_key = this.loadZK();
     if (window.ethereum) {
       // use MetaMask's provider
       this.web3 = new Web3(window.ethereum);
@@ -30,12 +27,6 @@ class Election extends React.Component {
     this.start();
   }
 
-  async loadZK() {
-    initialize().then(async (zokratesProvider) => {
-      // we have to initialize the wasm module before calling api functions
-      await zokratesProvider.setup(compZK);
-    });
-  }
 
   async start() {
     try {

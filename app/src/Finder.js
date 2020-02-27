@@ -5,7 +5,6 @@ import {
   Switch,
   Route,
   Link,
-  // useParams
 } from "react-router-dom";
 
 import Election from "./Election";
@@ -27,6 +26,7 @@ class Finder extends React.Component {
       this.web3 = new Web3(window.ethereum);
       window.ethereum.enable();
       console.log('ethereum detected');
+      console.log(this.web3);
     } else {
       this.web3 = new Web3( Web3.currentProvider || "http://127.0.0.1:7545");
     }
@@ -46,6 +46,7 @@ class Finder extends React.Component {
           Artifact.abi,
           deployedNetwork.address,
         ),
+        register: deployedNetwork.address,
         account: accounts[0],
       });
 
@@ -80,7 +81,7 @@ class Finder extends React.Component {
         searched: '',
       });
       const { findContract } = this.state.meta.methods;
-      const searchResults = await findContract(institution).call()
+      const searchResults = await findContract(institution).call();
 
       this.setState({
         status: '',
@@ -107,12 +108,12 @@ class Finder extends React.Component {
   render() {
     const {
       hide,
-      meta,
+      register,
       account,
       resultNumber,
       searchResults,
       searchedAccount,
-      searched
+      searched,
     } = this.state;
     const finder = <>
       <div>
@@ -145,7 +146,7 @@ class Finder extends React.Component {
         <div>
           <Switch>
             <Route path="/election/:id" children={<Election />} ></Route>
-            <Route path="/deploy_election" children={<Deployer meta={meta} account={account} />}></Route>
+            <Route path="/deploy_election" children={<Deployer register={register} account={account} web3={this.web3} />}></Route>
             <Route path="/" onClick={this.showFinder.bind(this)} ></Route>
           </Switch>
         </div>

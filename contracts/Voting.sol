@@ -1,5 +1,4 @@
-pragma solidity >=0.4.0 <0.6.0;
-// We have to specify what version of compiler this code will compile with
+pragma solidity ^0.6.1;
 
 import './verifier.sol';
 
@@ -47,7 +46,7 @@ contract Voting is Verifier {
     uint[2] memory a,
     uint[2][2] memory b,
     uint[2] memory c,
-    uint[3] memory input
+    uint[1] memory input
   ) public payable returns (bool) {
     require(verifyTx(a, b, c, input), "Incorrect proof given");
     votingRecord[msg.sender] = true;
