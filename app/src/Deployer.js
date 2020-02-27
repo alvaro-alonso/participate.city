@@ -70,7 +70,6 @@ class Deployer extends React.Component {
   async deploy() {
     const { budget, candidates, voters } = this.state;
     if (budget && candidates.length > 0 && voters.length > 0) {
-      // const hexCandidates = candidates.map((candidate) => Web3.utils.asciiToHex(candidate));
       const hashedVoter = voters.map((voter) => Web3.utils.sha3(voter));
       const tree = merkleTree(hashedVoter.map(x => new Buffer(x, 'hex')), SHA256);
       const root = Web3.utils.bytesToHex(tree[tree.length - 1].words);

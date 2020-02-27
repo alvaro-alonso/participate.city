@@ -1,5 +1,4 @@
 import React from 'react';
-// import { initialize } from 'zokrates-js';
 import Web3 from "web3";
 import { withRouter } from "react-router";
 import { Link } from "react-router-dom";
