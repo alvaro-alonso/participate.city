@@ -7,7 +7,9 @@ import { initialize } from 'zokrates-js';
 import * as wrapper from 'solc/wrapper';
 
 import './App.css';
-import { generateZokratesProof, votingCode } from './lib/zokratesProofGeneration';
+import votingCode from './contracts/voting.sol';
+import electionRegister from './contracts/electionRegistry.sol';
+import generateZokratesProof from './lib/zokratesProofGeneration';
 
 
 class Deployer extends React.Component {
@@ -15,7 +17,7 @@ class Deployer extends React.Component {
   constructor(props) {
     super(props);
     this.web3 = props.web3;
-    this.meta = props.meta;
+    this.register = props.register;
     this.account = props.account;
     this.state = { 
       status: '',
@@ -104,7 +106,11 @@ class Deployer extends React.Component {
       function findImports(path) {
         if (path === 'verifier.sol')
           return {
-            contents: verifier,
+            contents: verifier
+          };
+        else if (path === 'electionRegistry.sol')
+          return {
+            contents: electionRegister
           };
         else return { error: 'File not found' };
       }
@@ -119,6 +125,7 @@ class Deployer extends React.Component {
       VotingContract.deploy({
         data: '0x' + Voting.evm.bytecode.object,
         arguments: [
+          this.register,
           root,
           hashedVoter,
           candidates.map((candidate) => Web3.utils.asciiToHex(candidate)),
@@ -136,11 +143,6 @@ class Deployer extends React.Component {
       })
       .on('receipt', async (receipt) => {
         console.log(receipt);
-        const { register } = this.meta.methods;
-        console.log(this.meta.methods);
-        console.log(register);
-        const resp = await register(this.account, receipt.contractAddress).call();
-        console.log(resp);
         console.log(`Election registered at: ${this.account}\nElection address: ${receipt.contractAddress}`);
       })
       .on('confirmation', (confirmationNumber, receipt) => {

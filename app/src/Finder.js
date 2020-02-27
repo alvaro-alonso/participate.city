@@ -47,9 +47,9 @@ class Finder extends React.Component {
           Artifact.abi,
           deployedNetwork.address,
         ),
+        register: deployedNetwork.address,
         account: accounts[0],
       });
-      console.log(this.state.meta);
 
     } catch (error) {
       console.error("Could not connect to contract or chain.");
@@ -109,7 +109,7 @@ class Finder extends React.Component {
   render() {
     const {
       hide,
-      meta,
+      register,
       account,
       resultNumber,
       searchResults,
@@ -147,7 +147,7 @@ class Finder extends React.Component {
         <div>
           <Switch>
             <Route path="/election/:id" children={<Election />} ></Route>
-            <Route path="/deploy_election" children={<Deployer meta={meta} account={account} web3={this.web3} />}></Route>
+            <Route path="/deploy_election" children={<Deployer register={register} account={account} web3={this.web3} />}></Route>
             <Route path="/" onClick={this.showFinder.bind(this)} ></Route>
           </Switch>
         </div>
