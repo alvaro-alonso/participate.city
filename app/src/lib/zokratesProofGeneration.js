@@ -5,7 +5,7 @@ const generateZokratesProof = (voterNumber, treeRoot) => {
   const iterations =[...Array(treeDepth).keys()];
   const treeIteration = (i) => {
     return `
-      preimage = multiplex(directionSelector[${i}], leafHash, pathHash${i})
+      preimage = multiplex(directionSelector[${i}], currentDigest, pathHash${i})
       lhs = preimage[0..256]
       rhs = preimage[256..512]
       currentDigest = sha256(lhs, rhs)

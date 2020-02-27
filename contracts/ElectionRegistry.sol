@@ -1,4 +1,4 @@
-pragma solidity >=0.4.0 <0.6.0;
+pragma solidity ^0.6.1;
 
 
 contract ElectionRegistry {
@@ -7,7 +7,7 @@ contract ElectionRegistry {
 
   function register(address owner, address election) public returns (uint) {
     user_elections[owner].push(election); // -1 is very important
-    emit logRegistration(election);
+    // emit logRegistration(election);
     return 1;
   }
 

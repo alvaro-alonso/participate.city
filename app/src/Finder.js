@@ -49,6 +49,7 @@ class Finder extends React.Component {
         ),
         account: accounts[0],
       });
+      console.log(this.state.meta);
 
     } catch (error) {
       console.error("Could not connect to contract or chain.");
