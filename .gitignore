@@ -61,3 +61,5 @@ typings/
 .next
 build/contracts
 app/package-lock.json
+.vscode
+.ipynb_checkpoints
