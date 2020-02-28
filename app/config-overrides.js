@@ -21,12 +21,5 @@ module.exports = function override(config, env) {
     use: [{ loader: require.resolve('wasm-loader'), options: {} }]
   });
 
-  // add .sol loader
-  config.module.rules.push({
-    test: /\.sol$/,
-    include: path.resolve(__dirname, 'src'),
-    use: [{ loader: require.resolve('raw-loader'), options: {} }]
-  });
-
   return config;
 };

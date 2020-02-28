@@ -7,9 +7,7 @@ import { initialize } from 'zokrates-js';
 import * as wrapper from 'solc/wrapper';
 
 import './App.css';
-import votingCode from './contracts/voting.sol';
-import electionRegister from './contracts/electionRegistry.sol';
-import generateZokratesProof from './lib/zokratesProofGeneration';
+import { generateZokratesProof, votingCode, electionRegister } from './lib/zokratesProofGeneration';
 
 
 class Deployer extends React.Component {

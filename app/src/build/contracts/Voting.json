@@ -6660,10 +6660,51 @@
       },
       "address": "0x6591ae76FE00eB47F0517e117113388Cb3497d26",
       "transactionHash": "0xd8c5dfd217e1971deaa94b17f8f6535f81aadadb12deea4cb37188ace677bcf8"
+    },
+    "1582883823455": {
+      "events": {
+        "0x3f3cfdb26fb5f9f1786ab4f1a1f9cd4c0b5e726cbdfc26e495261731aad44e39": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "s",
+              "type": "string"
+            }
+          ],
+          "name": "Verified",
+          "type": "event"
+        },
+        "0x6202b9210eddfec514dee7725e74c49be931243a5fda51c01552a5fb07e893dd": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "receiver",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            }
+          ],
+          "name": "logWithdrawal",
+          "type": "event"
+        }
+      },
+      "links": {
+        "BN256G2": "0x70aba375f663fF5027282e6d75554aDcB043Ca14"
+      },
+      "address": "0x3EC1d755D45BA8bE139d01A1aF899FC1599C125E",
+      "transactionHash": "0x94f3472279e5735a014ecd18f9b97b1b7be314c768974000f23f09d6b8666ee0"
     }
   },
   "schemaVersion": "3.0.23",
-  "updatedAt": "2020-02-27T18:29:43.716Z",
+  "updatedAt": "2020-02-28T09:59:05.468Z",
   "networkType": "ethereum",
   "devdoc": {
     "methods": {}
