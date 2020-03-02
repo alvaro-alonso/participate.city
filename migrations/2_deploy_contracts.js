@@ -18,5 +18,6 @@ module.exports = async function(deployer) {
 
   await deployer.deploy(Register);
   const registerAdd = await Register.deployed();
-  deployer.deploy(Voting, registerAdd, web3.utils.asciiToHex('treeRoot'), toHex(candidates1), toHex(candidates2), setup);
+
+  await deployer.deploy(Voting, registerAdd.address, web3.utils.asciiToHex('treeRoot'), toHex(candidates1), toHex(candidates2), setup);
 };
