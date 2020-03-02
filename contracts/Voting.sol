@@ -1,6 +1,7 @@
 pragma solidity ^0.6.1;
 
 import './verifier.sol';
+import './ElectionRegistry.sol';
 
 
 contract Voting is Verifier {
@@ -23,10 +24,11 @@ contract Voting is Verifier {
   mapping (address => bool) votingRecord;
   event logWithdrawal(address receiver, uint amount);
 
-  constructor(bytes32 root, bytes32[] memory registry, bytes32[] memory candidateNames) public payable {
+constructor(address registryAdd, bytes32 root, bytes32[] memory registry, bytes32[] memory candidateNames) public payable {
     merkleRoot = root;
     voters = registry;
     candidateList = candidateNames;
+    ElectionRegistry(registryAdd).register(msg.sender, address(this));
   }
 
   function getCandidates() public returns (bytes32[] memory) {

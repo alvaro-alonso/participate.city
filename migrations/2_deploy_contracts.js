@@ -16,15 +16,7 @@ module.exports = async function(deployer) {
   deployer.deploy(Verifier);
   deployer.link(BN256G2, Voting);
 
-  await Promise.all([
-    deployer.deploy(Register),
-    deployer.deploy(Voting, '0x00', toHex(candidates1), toHex(candidates2), setup)
-  ])
-
-  const instances = await Promise.all([
-    Register.deployed(),
-    Voting.deployed()
-  ])
-  await instances[0].register('0xdbfb30d00788a02710a185dc4e4244cec9c2837c', instances[1].address);
-
+  await deployer.deploy(Register);
+  const registerAdd = await Register.deployed();
+  deployer.deploy(Voting, registerAdd, web3.utils.asciiToHex('treeRoot'), toHex(candidates1), toHex(candidates2), setup);
 };
