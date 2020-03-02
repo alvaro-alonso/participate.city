@@ -124,6 +124,7 @@ class Deployer extends React.Component {
         arguments: [
           this.register,
           root,
+          setup.pk,
           hashedVoter,
           candidates.map((candidate) => Web3.utils.asciiToHex(candidate)),
         ],

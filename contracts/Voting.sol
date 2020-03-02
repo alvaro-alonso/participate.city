@@ -17,6 +17,7 @@ contract Voting is Verifier {
   */
 
   bytes32 public merkleRoot;
+  uint8[] public provingKey;
   bytes32[] public candidateList;
   bytes32[] public voters;
 
@@ -24,19 +25,38 @@ contract Voting is Verifier {
   mapping (address => bool) votingRecord;
   event logWithdrawal(address receiver, uint amount);
 
-constructor(address registryAdd, bytes32 root, bytes32[] memory registry, bytes32[] memory candidateNames) public payable {
+  constructor(
+    address registryAdd,
+    bytes32 root,
+    uint8[] memory provingSetup,
+    bytes32[] memory registry,
+    bytes32[] memory candidateNames
+  ) public payable {
     merkleRoot = root;
+    provingKey = provingSetup;
     voters = registry;
     candidateList = candidateNames;
     ElectionRegistry(registryAdd).register(msg.sender, address(this));
   }
 
-  function getCandidates() public returns (bytes32[] memory) {
+  function getCandidates() public view returns (bytes32[] memory) {
     return candidateList;
   }
 
+  function getVoters() public view returns (bytes32[] memory) {
+    return voters;
+  }
+
+  function getProvingKey() public view returns (uint8[] memory) {
+    return provingKey;
+  }
+
+  function getBalance() public view returns (uint) {
+    return address(this).balance;
+  }
+
   // This function returns the total votes a candidate has received so far
-  function totalVotesFor(bytes32 candidate) public returns (uint256) {
+  function totalVotesFor(bytes32 candidate) public view returns (uint256) {
     require(validCandidate(candidate), "Invalid candidate name");
     return votesReceived[candidate];
   }
@@ -75,7 +95,4 @@ constructor(address registryAdd, bytes32 root, bytes32[] memory registry, bytes3
     return false;
   }
 
-  function getBalance() public view returns (uint) {
-    return address(this).balance;
-  }
 }

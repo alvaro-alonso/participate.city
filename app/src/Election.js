@@ -2,10 +2,14 @@ import React from 'react';
 import Web3 from "web3";
 import { withRouter } from "react-router";
 import { Link } from "react-router-dom";
+import merkleTree from "merkle-lib";
+import SHA256 from "crypto-js/sha256";
+import { initialize } from 'zokrates-js';
 
 import VotingArtifact from "./build/contracts/Voting.json";
 import './App.css';
 
+const invalidProofMsg = 'Incorrect proof of eligibility';
 
 
 class Election extends React.Component {
@@ -84,38 +88,68 @@ class Election extends React.Component {
 
   async voteFor() {
     const { candidates } = this;
-    try {
-      const zkProof = JSON.parse(document.getElementById("proof").value); 
-      var { proof, inputs } = zkProof;
-      var { a, b, c } = proof;
-    } catch (error) {
+    const publicKey = document.getElementById("publickey").value; 
+    const privateKey = document.getElementById("privateKey").value;
+    const candidate = document.getElementById("candidate").value;
+
+    // check that the keys have the right length and format (HEX)
+    if (publicKey.length !== 32 || privateKey.length !== 32) {
+      const key = (publicKey.length !== 32) ? 'public' : 'private';
       this.setState({
-        status: `Wrong input for proof at ${error}`,
+        status: `${key} key invalid format`,
       });
-      return -1;
+      return;
     }
 
-    const candidate = document.getElementById("candidate").value;
-    if (candidates.includes(candidate)) {
-      this.setState({
-        status: 'Your vote is being processed, have some patience',
-      });
-      // updateStatus('Your vote is being processed, have some patience', this);
-      const { voteForCandidate } = this.meta.methods;
-      await voteForCandidate(Web3.utils.asciiToHex(candidate), a, b, c, inputs).send({ from: this.account });
-      this.setState({
-        status: 'Your vote has been processed',
-      });
-      // updateStatus('Your vote has been processed', this);
-    } else {
+    // check that candidate name is valid
+    if(!(candidates.includes(candidate))) {
       this.setState({
         status: `Wrong candidate. Please choose between ${this.candidates}`,
       });
-      // updateStatus(`Wrong candidate. Please choose between ${this.candidates}`, this);
+      return;
+    } else {
+      this.setState({
+        status: 'Your vote is being processed, have some patience',
+      });
     }
 
-    this.getVotes();
-    this.getBudget();
+    const { getVoters, getProvingKey, voteForCandidate } = this.meta.methods;
+    const voters = await getVoters().call();
+    const pubKeyInd = 0; // index where pubKey is 
+
+    // failed proof if pubKey not in voters
+    if (pubKeyInd < 0) {
+      this.setState({
+        status: invalidProofMsg,
+      })
+      return;
+    }
+
+    // const tree  = merkleTree(voters, SHA256);;
+    // const directionPath = 2**tree.length; // get the direction path formula
+    // const treePath = tree.getTreePath(publicKey); // get treePath of pub key
+
+    // const splitBigInt = (binInt) => {
+      
+    // };
+    // const args = {
+
+    // };
+
+    // const zokratesProvider = await initialize();
+    // const provingKey = await getProvingKey().call();
+    // const witness = await zokratesProvider.computeWitness(provingKey, args);
+    // const { proof, input } = zokratesProvider.generateProof(witness);
+
+    // // check error-handling in ethereum
+    // await voteForCandidate(Web3.utils.asciiToHex(candidate), proof, input).send({ from: this.account });
+
+    // this.setState({
+    //   status: 'Your vote has been processed',
+    // });
+
+    // this.getVotes();
+    // this.getBudget();
   }
 
   render () {
@@ -135,13 +169,17 @@ class Election extends React.Component {
         <p>{this.state.status}</p>
 
         <div className="container" id="actions">
-
           <input type="text" id="candidate" placeholder="choose a candidate" />
-          <input type="text" id="proof" placeholder="insert proof" />
+
+          <div className="container" id="proof">
+            <input type="text" id="public_key" placeholder="public key" />
+            <input type="text" id="private_key" placeholder="private key" />
+          </div>
+
           <button onClick={this.voteFor.bind(this)} >Vote</button>
           <Link to="/" ><button>Home</button></Link>
-
         </div>
+
       </div>
     );
   }
