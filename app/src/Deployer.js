@@ -139,16 +139,14 @@ class Deployer extends React.Component {
       const solc = wrapper(window.Module);
       const output = JSON.parse(solc.compile(JSON.stringify(input), {import: findImports}));
       const { Voting } = output.contracts['voting.sol'];
-      console.log(output);
       const VotingContract = new this.web3.eth.Contract(Voting.abi);
-      console.log(setup)
+      console.log(VotingContract);
       
       VotingContract.deploy({
         data: '0x' + Voting.evm.bytecode.object,
         arguments: [
           this.register,
           root,
-          // setup.pk,
           hashedVoter,
           candidates.map((candidate) => Web3.utils.asciiToHex(candidate)),
         ],
