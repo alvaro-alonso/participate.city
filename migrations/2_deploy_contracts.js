@@ -5,7 +5,10 @@ const Verifier = artifacts.require('Verifier');
 const Register = artifacts.require('ElectionRegistry');
 
 const toHex = (candidates) => candidates.map((cand) => web3.utils.asciiToHex(cand));
-const candidates1 = ['Rama', 'Nick', 'Jose'];
+const voters = [
+  '92b34907ec85874ab6faadaa1fd32b3e86c1211c8fb9350a8bf13bd5caf1ff29',
+  '5d18f5dbfb0469a7136a3f3f95f46b3b1dbf434e1f9d95574ed8d40f8a40d0f1',
+];
 const candidates2 = ['Vishnu', 'Jon', 'Maria'];
 const setup = { value: 1000000000000000, gas: 6700000 };
 
@@ -16,15 +19,8 @@ module.exports = async function(deployer) {
   deployer.deploy(Verifier);
   deployer.link(BN256G2, Voting);
 
-  await Promise.all([
-    deployer.deploy(Register),
-    deployer.deploy(Voting, '0x00', toHex(candidates1), toHex(candidates2), setup)
-  ])
+  await deployer.deploy(Register);
+  const registerAdd = await Register.deployed();
 
-  const instances = await Promise.all([
-    Register.deployed(),
-    Voting.deployed()
-  ])
-  await instances[0].register('0xdbfb30d00788a02710a185dc4e4244cec9c2837c', instances[1].address);
-
+  await deployer.deploy(Voting, registerAdd.address, web3.utils.asciiToHex('treeRoot'), toHex(voters), toHex(candidates2), setup);
 };
