@@ -6,8 +6,9 @@ import merkleTree from "merkle-lib";
 import SHA256 from "crypto-js/sha256";
 import { initialize } from 'zokrates-js';
 
-import VotingArtifact from "./build/contracts/Voting.json";
 import './App.css';
+import { generateZokratesProof } from './lib/zokratesProofGeneration';
+import VotingArtifact from "./build/contracts/Voting.json";
 
 const invalidProofMsg = 'Incorrect proof of eligibility';
 
@@ -92,14 +93,14 @@ class Election extends React.Component {
     const privateKey = document.getElementById("privateKey").value;
     const candidate = document.getElementById("candidate").value;
 
-    // check that the keys have the right length and format (HEX)
-    if (publicKey.length !== 32 || privateKey.length !== 32) {
-      const key = (publicKey.length !== 32) ? 'public' : 'private';
-      this.setState({
-        status: `${key} key invalid format`,
-      });
-      return;
-    }
+    // TODO: check that the keys have the right length and format (HEX)
+    // if (publicKey.length !== 32 || privateKey.length !== 32) {
+    //   const key = (publicKey.length !== 32) ? 'public' : 'private';
+    //   this.setState({
+    //     status: `${key} key invalid format`,
+    //   });
+    //   return;
+    // }
 
     // check that candidate name is valid
     if(!(candidates.includes(candidate))) {
@@ -113,11 +114,11 @@ class Election extends React.Component {
       });
     }
 
-    const { getVoters, getProvingKey, voteForCandidate } = this.meta.methods;
+    const { getVoters, getRoot, voteForCandidate } = this.meta.methods;
     const voters = await getVoters().call();
-    const pubKeyInd = 0; // index where pubKey is 
+    const root = await getRoot().call();
+    const pubKeyInd = voters.indexOf(publicKey); 
 
-    // failed proof if pubKey not in voters
     if (pubKeyInd < 0) {
       this.setState({
         status: invalidProofMsg,
@@ -125,9 +126,19 @@ class Election extends React.Component {
       return;
     }
 
-    // const tree  = merkleTree(voters, SHA256);;
-    // const directionPath = 2**tree.length; // get the direction path formula
-    // const treePath = tree.getTreePath(publicKey); // get treePath of pub key
+    // const zokProvider = await initialize()
+    // const program = generateZokratesProof
+    // const  = initialize()
+    //   .then((zokratesProv) => {
+    //     const proof = generateZokratesProof()
+    //     return zokratesProv.compile()
+    //   }
+
+    // );
+
+    const tree  = merkleTree(voters, SHA256);;
+    const directionPath = 2**tree.length; // get the direction path formula
+    const treePath = tree.getTreePath(publicKey); // get treePath of pub key
 
     // const splitBigInt = (binInt) => {
       
@@ -137,8 +148,13 @@ class Election extends React.Component {
     // };
 
     // const zokratesProvider = await initialize();
-    // const provingKey = await getProvingKey().call();
-    // const witness = await zokratesProvider.computeWitness(provingKey, args);
+    // const proofZok = generateZokratesProof(voters.length, rootArray);
+    // console.log(proofZok);
+    // const zokratesProv = await initialize()
+    // // use proofZok in production
+    // const proof = await zokratesProvider.compile(proofZok, "main", () => {});
+    // const { pk } = zokratesProvider.setup(proof);
+    // const witness = await zokratesProvider.computeWitness(pk, args);
     // const { proof, input } = zokratesProvider.generateProof(witness);
 
     // // check error-handling in ethereum
