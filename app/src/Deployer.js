@@ -5,6 +5,7 @@ import merkleTree from "merkle-lib";
 import SHA256 from "crypto-js/sha256";
 import { initialize } from 'zokrates-js';
 import * as wrapper from 'solc/wrapper';
+import ecc from 'eosjs-ecc';
 
 import './App.css';
 import { generateZokratesProof, votingCode, electionRegister } from './lib/zokratesProofGeneration';
@@ -29,8 +30,12 @@ class Deployer extends React.Component {
     this.setState({insertedCandidate : event.target.value})
   }
 
-  updateVoterField(event){
-    this.setState({insertedVoter : event.target.value})
+  updatePointX(event){
+    this.setState({ pointX: event.target.value });
+  }
+
+  updatePointY(event){
+    this.setState({ pointY: event.target.value });
   }
 
   updateBudget(event){
@@ -57,12 +62,31 @@ class Deployer extends React.Component {
   }
 
   addVoter() {
-    let { insertedVoter, voters } = this.state;
-    voters.push(insertedVoter);
-    this.setState({
-      voters,
-      insertedVoter: '',
-    });
+    let { pointX, pointY, voters } = this.state;
+    const x = Web3.utils.toBN(pointX), y = Web3.utils.toBN(pointY);
+    if (pointX.length > 77 || pointX.length < 76 || pointY.length > 77 || pointY.length < 76
+      || !(Web3.utils.isBN(x)) || !(Web3.utils.isBN(y))) {
+      this.setState({
+        status: 'Wrong Format of Public Key',
+      });
+      return;
+    }
+
+    const num = [...(x.toArray()), ...(y.toArray())];
+    const insertedVoter = ecc.sha256(num);
+    if (voters.includes(insertedVoter)) {
+      this.setState({
+        status: 'voter already inserted',
+      });
+    } else {
+      voters.push(insertedVoter);
+      this.setState({
+        voters,
+        status: '',
+        pointX: '',
+        pointY: '',
+      });
+    }
   }
 
   async deploy() {
@@ -117,14 +141,14 @@ class Deployer extends React.Component {
       const { Voting } = output.contracts['voting.sol'];
       console.log(output);
       const VotingContract = new this.web3.eth.Contract(Voting.abi);
-      console.log(VotingContract);
+      console.log(setup)
       
       VotingContract.deploy({
         data: '0x' + Voting.evm.bytecode.object,
         arguments: [
           this.register,
           root,
-          setup.pk,
+          // setup.pk,
           hashedVoter,
           candidates.map((candidate) => Web3.utils.asciiToHex(candidate)),
         ],
@@ -170,7 +194,8 @@ class Deployer extends React.Component {
 
         <div className="container" id="voters">
           <p>Voters</p>
-          <input type="text" id="voters" value={this.state.insertedVoter} onChange={this.updateVoterField.bind(this)} placeholder="insert voter" />
+          <input type="text" id="point-x" value={this.state.pointX} onChange={this.updatePointX.bind(this)} placeholder="insert point x" />
+          <input type="text" id="point-y" value={this.state.pointY} onChange={this.updatePointY.bind(this)} placeholder="insert point y" />
           <button onClick={this.addVoter.bind(this)}>add</button>
           {this.state.voters.length > 0? <ul>{this.state.voters.map(voter => <li key={voter}>{voter}</li>)}</ul> : null}
         </div>
