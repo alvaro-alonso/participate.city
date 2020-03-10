@@ -17,7 +17,6 @@ contract Voting is Verifier {
   */
 
   bytes32 public merkleRoot;
-  uint8[] public provingKey;
   bytes32[] public candidateList;
   bytes32[] public voters;
 
@@ -28,12 +27,10 @@ contract Voting is Verifier {
   constructor(
     address registryAdd,
     bytes32 root,
-    uint8[] memory provingSetup,
     bytes32[] memory registry,
     bytes32[] memory candidateNames
   ) public payable {
     merkleRoot = root;
-    provingKey = provingSetup;
     voters = registry;
     candidateList = candidateNames;
     ElectionRegistry(registryAdd).register(msg.sender, address(this));
@@ -47,8 +44,8 @@ contract Voting is Verifier {
     return voters;
   }
 
-  function getProvingKey() public view returns (uint8[] memory) {
-    return provingKey;
+  function getRoot() public view returns (bytes32) {
+    return merkleRoot;
   }
 
   function getBalance() public view returns (uint) {
