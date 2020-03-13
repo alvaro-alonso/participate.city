@@ -11,7 +11,7 @@ def combine256(field[2] values) -> (field[256]):
 	b = unpack128(values[1])
 	return [...a, ...b]
 
-def main(private field[2] pk, private field sk, private field[3] directionSelector, private field[2] leafDigest, private field[2] pathDigest0, private field[2] pathDigest1, private field[2] pathDigest2, private field[2] rootDigest) -> (field):
+def main(private field[2] pk, private field sk, private field[3] directionSelector, private field[2] leafDigest, private field[2] pathDigest0, private field[2] pathDigest1, private field[2] pathDigest2, field[2] rootDigest) -> (field):
 
 	context = context()
 	1 == proofOfOwnership(pk, sk, context) 

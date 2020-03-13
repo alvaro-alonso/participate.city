@@ -21,6 +21,7 @@ const generateZokratesProof = (voterNumber, treeRoot) => {
   import "hashes/sha256/512bitPadded" as sha256
   import "utils/pack/nonStrictUnpack256" as unpack256
   import "utils/pack/unpack128" as unpack128
+  import "utils/pack/pack256" as pack256
   import "hashes/utils/256bitsDirectionHelper" as multiplex
 
 
@@ -42,7 +43,7 @@ const generateZokratesProof = (voterNumber, treeRoot) => {
 
       field[256] currentDigest = leafHash
       ${treePathGenerator}
-      [${treeRoot}] == currentDigest
+      ${treeRoot} == pack256(currentDigest)
 
       return 1
   `;
