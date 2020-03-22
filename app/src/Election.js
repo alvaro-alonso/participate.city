@@ -162,20 +162,32 @@ class Election extends React.Component {
       splitBN(Web3.utils.hexToBytes('0x' + hashedPubKey)),
     ].concat(treePath.map(node => splitBN(node)));
     console.log(witness);
-    const witnessOut = await zokratesProvider.computeWitness(program, witness);
-    console.log(witnessOut);
-    if (parseInt(JSON.parse(witnessOut.output)[0]) !== 1) {
-      this.setState({
-        status: 'Wrong proof!',
-      });
+    let witnessOut;
+    try {
+      witnessOut = await zokratesProvider.computeWitness(program, witness);
+      console.log(witnessOut);
+      if (parseInt(JSON.parse(witnessOut.output)[0]) !== 1) {
+        this.setState({
+          status: 'Wrong proof!',
+        });
+        return;
+      }
+    } catch (error) {
+      console.warn(error);
       return;
     }
 
-    const setup = await zokratesProvider.setup(program);
-    console.log(setup);
-    // const proof = await zokratesProvider.generateProof(program, witnessOut.witness, pk);
-    // console.log(proof);
-    // voteForCandidate(Web3.utils.asciiToHex(candidate), proof, input);
+    const { vk, pk } = await zokratesProvider.setup(program.program);
+    console.log(zokratesProvider.exportSolidityVerifier(vk, true));
+    const proofJSON = await zokratesProvider.generateProof(program.program, witnessOut.witness, pk);
+    const { proof, inputs } = JSON.parse(proofJSON);
+    console.log(proof, inputs);
+    const proofValues = Object.values(proof);
+    console.log(proofValues);
+    await voteForCandidate(Web3.utils.asciiToHex(candidate), proofValues, inputs).send({
+      from: this.account,
+      gasPrice: 3000000000,
+    });
 
   }
 
@@ -209,7 +221,7 @@ class Election extends React.Component {
           </div>
 
           <div>
-            <h3></h3>
+    } 
             <button onClick={this.voteFor.bind(this)} >Vote</button>
             <Link to="/" ><button>Home</button></Link>
           </div>

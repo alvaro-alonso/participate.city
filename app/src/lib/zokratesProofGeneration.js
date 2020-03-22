@@ -119,10 +119,10 @@ contract Voting is Verifier {
     uint[1] memory input
   ) public payable returns (bool) {
     require(verifyTx(proof, input), "Incorrect proof given");
-    votingRecord[msg.sender] = true;
+    // votingRecord[msg.sender] = true;
     require(validCandidate(candidate), "Invalid candidate name");
     votesReceived[candidate] += 1;
-    withdraw(msg.sender, 1 szabo);
+    // withdraw(msg.sender, 1 szabo);
     return true;
   }
 

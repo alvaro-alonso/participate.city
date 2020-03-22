@@ -1,4 +1,5 @@
-pragma solidity ^0.6.1;
+pragma solidity 0.6.1;
+pragma experimental ABIEncoderV2;
 
 import './verifier.sol';
 import './ElectionRegistry.sol';
@@ -62,16 +63,14 @@ contract Voting is Verifier {
   // is equivalent to casting a vote
   function voteForCandidate(
     bytes32 candidate,
-    uint[2] memory a,
-    uint[2][2] memory b,
-    uint[2] memory c,
+    Proof memory proof,
     uint[1] memory input
   ) public payable returns (bool) {
-    require(verifyTx(a, b, c, input), "Incorrect proof given");
-    votingRecord[msg.sender] = true;
+    require(verifyTx(proof, input), "Incorrect proof given");
+    // votingRecord[msg.sender] = true;
     require(validCandidate(candidate), "Invalid candidate name");
     votesReceived[candidate] += 1;
-    withdraw(msg.sender, 1 szabo);
+    // withdraw(msg.sender, 1 szabo);
     return true;
   }
 

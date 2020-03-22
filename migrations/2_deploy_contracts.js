@@ -15,7 +15,7 @@ const voters = [
   '6760fd62081bbc67ae0320d61122e54871d026be124f41e11df2336077a93c39',
   '5bd9416d7cb4ff4560398e9d6b242fc3aaccea9c456038dcfb548a9ad8593945',
 ].map((voter) => '0x' + voter);
-const tree = merkleTree
+// const tree = merkleTree
 const candidates2 = ['Vishnu', 'Jon', 'Maria'];
 const setup = { value: 1000000000000000, gas: 6700000 };
 
