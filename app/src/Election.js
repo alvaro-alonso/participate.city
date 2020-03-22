@@ -177,8 +177,7 @@ class Election extends React.Component {
       return;
     }
 
-    const { vk, pk } = await zokratesProvider.setup(program.program);
-    console.log(zokratesProvider.exportSolidityVerifier(vk, true));
+    const { pk } = await zokratesProvider.setup(program.program);
     const proofJSON = await zokratesProvider.generateProof(program.program, witnessOut.witness, pk);
     const { proof, inputs } = JSON.parse(proofJSON);
     console.log(proof, inputs);
