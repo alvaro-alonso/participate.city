@@ -3,6 +3,7 @@ import "ecc/proofOfOwnership" as proofOfOwnership
 import "hashes/sha256/512bitPadded" as sha256
 import "utils/pack/nonStrictUnpack256" as unpack256
 import "utils/pack/unpack128" as unpack128
+import "utils/pack/pack256" as pack256
 import "hashes/utils/256bitsDirectionHelper" as multiplex
 
 
@@ -11,7 +12,7 @@ def combine256(field[2] values) -> (field[256]):
 	b = unpack128(values[1])
 	return [...a, ...b]
 
-def main(private field[2] pk, private field sk, private field[3] directionSelector, private field[2] leafDigest, private field[2] pathDigest0, private field[2] pathDigest1, private field[2] pathDigest2, private field[2] rootDigest) -> (field):
+def main(field[2] rootDigest, private field[2] pk, private field sk, private field[3] directionSelector, private field[2] leafDigest, private field[2] pathDigest0, private field[2] pathDigest1, private field[2] pathDigest2,) -> (field):
 
 	context = context()
 	1 == proofOfOwnership(pk, sk, context) 
@@ -41,6 +42,6 @@ def main(private field[2] pk, private field sk, private field[3] directionSelect
 	currentDigest = sha256(lhs, rhs)
 	
 	treeRoot = combine256(rootDigest)
-	treeRoot == currentDigest
+	treeRoot == pack256(currentDigest)
 
 	return 1

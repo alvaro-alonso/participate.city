@@ -1,8 +1,7 @@
 import React from 'react';
 import Web3 from "web3";
 import { Link } from "react-router-dom";
-import merkleTree from "merkle-lib";
-import SHA256 from "crypto-js/sha256";
+import MerkleTree from "merkletreejs";
 import { initialize } from 'zokrates-js';
 import * as wrapper from 'solc/wrapper';
 import ecc from 'eosjs-ecc';
@@ -20,6 +19,7 @@ class Deployer extends React.Component {
     this.account = props.account;
     this.state = { 
       status: '',
+      budget: '',
       candidates: [],
       voters: [],
     };
@@ -42,8 +42,9 @@ class Deployer extends React.Component {
     const budget = parseInt(event.target.value);
     if (Number.isNaN(budget)){
       this.setState({
-        budget: undefined,
-        status: 'budget must be and integer'});
+        budget: '',
+        status: 'budget must be and integer',
+      });
     } else {
       this.setState({
         budget,
@@ -92,13 +93,12 @@ class Deployer extends React.Component {
   async deploy() {
     const { budget, candidates, voters } = this.state;
     if (budget && candidates.length > 0 && voters.length > 0) {
-      const hashedVoter = voters.map((voter) => Web3.utils.sha3(voter));
-      const tree = merkleTree(hashedVoter.map(x => new Buffer(x, 'hex')), SHA256);
-      const root = Web3.utils.bytesToHex(tree[tree.length - 1].words);
-      const rootArray = parseInt(root, 16).toString(2).split('').map(x => parseInt(x));
-      rootArray.unshift(0);
-      console.log(rootArray);
-      const proofZok = generateZokratesProof(voters.length, rootArray);
+      const tree = new MerkleTree(voters, ecc.sha256);
+      tree.print();
+      const root = '0x' + tree.getRoot().toString('hex');
+      console.log(root);
+      const rootNumber = Web3.utils.hexToNumberString(root);
+      const proofZok = generateZokratesProof(voters.length, rootNumber);
       console.log(proofZok);
       const zokratesProv = await initialize()
       // use proofZok in production
@@ -147,7 +147,7 @@ class Deployer extends React.Component {
         arguments: [
           this.register,
           root,
-          hashedVoter,
+          voters.map((voter) => '0x' + voter),
           candidates.map((candidate) => Web3.utils.asciiToHex(candidate)),
         ],
       }).send({

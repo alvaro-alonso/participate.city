@@ -2,12 +2,20 @@ import React from 'react';
 import Web3 from "web3";
 import { withRouter } from "react-router";
 import { Link } from "react-router-dom";
-import merkleTree from "merkle-lib";
-import SHA256 from "crypto-js/sha256";
+import MerkleTree from "merkletreejs";
+import ecc from 'eosjs-ecc';
 import { initialize } from 'zokrates-js';
 
-import VotingArtifact from "./build/contracts/Voting.json";
 import './App.css';
+import {
+  incorrectPrivateKeyFormat,
+  incorrectPublicKeyFormat,
+  hashPubKey,
+  calculateMerklePath,
+  splitBN,
+} from './lib/utils';
+import { generateZokratesProof } from "./lib/zokratesProofGeneration";
+import VotingArtifact from "./build/contracts/Voting.json";
 
 const invalidProofMsg = 'Incorrect proof of eligibility';
 
@@ -88,15 +96,16 @@ class Election extends React.Component {
 
   async voteFor() {
     const { candidates } = this;
-    const publicKey = document.getElementById("publickey").value; 
+    const { getVoters, getRoot, voteForCandidate } = this.meta.methods;
+
+    const pointX = document.getElementById("pointX").value, pointY = document.getElementById("pointY").value;
     const privateKey = document.getElementById("privateKey").value;
     const candidate = document.getElementById("candidate").value;
 
-    // check that the keys have the right length and format (HEX)
-    if (publicKey.length !== 32 || privateKey.length !== 32) {
-      const key = (publicKey.length !== 32) ? 'public' : 'private';
+    // check that the keys have the right length and is a bigNumber
+    if (incorrectPublicKeyFormat(pointX) || incorrectPublicKeyFormat(pointY) || incorrectPrivateKeyFormat(privateKey)) {
       this.setState({
-        status: `${key} key invalid format`,
+        status: 'invalid format of arguments',
       });
       return;
     }
@@ -113,9 +122,17 @@ class Election extends React.Component {
       });
     }
 
-    const { getVoters, getProvingKey, voteForCandidate } = this.meta.methods;
-    const voters = await getVoters().call();
-    const pubKeyInd = 0; // index where pubKey is 
+    let voters = await getVoters().call();
+    voters = voters.map((voter) => voter.substring(2));
+    const treeRoot = await getRoot().call();
+    const rootNumber = Web3.utils.hexToNumberString(treeRoot);
+    const zokratesProvider = await initialize();
+    const zokratesCode = generateZokratesProof(voters.length, rootNumber);
+    const program = await zokratesProvider.compile(zokratesCode, "main", () => {});
+    console.log(zokratesCode);
+    const hashedPubKey = hashPubKey(pointX, pointY); 
+    console.log(`voters: ${voters}`);
+    const pubKeyInd = voters.indexOf(hashedPubKey); // index where pubKey is 
 
     // failed proof if pubKey not in voters
     if (pubKeyInd < 0) {
@@ -125,31 +142,53 @@ class Election extends React.Component {
       return;
     }
 
-    // const tree  = merkleTree(voters, SHA256);;
-    // const directionPath = 2**tree.length; // get the direction path formula
-    // const treePath = tree.getTreePath(publicKey); // get treePath of pub key
+    const treeDepth = Math.ceil(Math.log2(voters.length));
+    const merklePath = calculateMerklePath(pubKeyInd, treeDepth);
+    console.log(`inxed of user : ${pubKeyInd}\nmerkle path: ${merklePath}`);
+    const tree = new MerkleTree(voters, ecc.sha256);
+    const treeProof = tree.getProof(hashedPubKey);
+    console.log(`created tree root ${tree.getRoot().toString('hex')}
+    election root: ${treeRoot}
+    proof: ${treeProof}
+    tree: ${tree.print()}
+    `);
+    const treePath = treeProof.map((node) => node.data);
+    console.log(treePath);
+    console.log(treePath.map(node => splitBN(node)));
+    const witness = [
+      [pointX.toString(), pointY.toString()],
+      privateKey.toString(),
+      merklePath,
+      splitBN(Web3.utils.hexToBytes('0x' + hashedPubKey)),
+    ].concat(treePath.map(node => splitBN(node)));
+    console.log(witness);
+    let witnessOut;
+    try {
+      witnessOut = await zokratesProvider.computeWitness(program, witness);
+      console.log(witnessOut);
+      if (parseInt(JSON.parse(witnessOut.output)[0]) !== 1) {
+        this.setState({
+          status: 'Wrong proof!',
+        });
+        return;
+      }
+    } catch (error) {
+      console.warn(error);
+      return;
+    }
 
-    // const splitBigInt = (binInt) => {
-      
-    // };
-    // const args = {
+    const { vk, pk } = await zokratesProvider.setup(program.program);
+    console.log(zokratesProvider.exportSolidityVerifier(vk, true));
+    const proofJSON = await zokratesProvider.generateProof(program.program, witnessOut.witness, pk);
+    const { proof, inputs } = JSON.parse(proofJSON);
+    console.log(proof, inputs);
+    const proofValues = Object.values(proof);
+    console.log(proofValues);
+    await voteForCandidate(Web3.utils.asciiToHex(candidate), proofValues, inputs).send({
+      from: this.account,
+      gasPrice: 3000000000,
+    });
 
-    // };
-
-    // const zokratesProvider = await initialize();
-    // const provingKey = await getProvingKey().call();
-    // const witness = await zokratesProvider.computeWitness(provingKey, args);
-    // const { proof, input } = zokratesProvider.generateProof(witness);
-
-    // // check error-handling in ethereum
-    // await voteForCandidate(Web3.utils.asciiToHex(candidate), proof, input).send({ from: this.account });
-
-    // this.setState({
-    //   status: 'Your vote has been processed',
-    // });
-
-    // this.getVotes();
-    // this.getBudget();
   }
 
   render () {
@@ -169,15 +208,23 @@ class Election extends React.Component {
         <p>{this.state.status}</p>
 
         <div className="container" id="actions">
-          <input type="text" id="candidate" placeholder="choose a candidate" />
-
-          <div className="container" id="proof">
-            <input type="text" id="public_key" placeholder="public key" />
-            <input type="text" id="private_key" placeholder="private key" />
+          <div className="container" id="candidate-container" >
+            <h3> Candidate </h3>
+            <input type="text" id="candidate" placeholder="choose a candidate" />
           </div>
 
-          <button onClick={this.voteFor.bind(this)} >Vote</button>
-          <Link to="/" ><button>Home</button></Link>
+          <div className="container" id="proof">
+            <h3> Proof </h3>
+            <input type="text" id="privateKey" placeholder="private key" />
+            <input type="text" id="pointX" placeholder="public key #1" />
+            <input type="text" id="pointY" placeholder="public key #2" />
+          </div>
+
+          <div>
+    } 
+            <button onClick={this.voteFor.bind(this)} >Vote</button>
+            <Link to="/" ><button>Home</button></Link>
+          </div>
         </div>
 
       </div>
