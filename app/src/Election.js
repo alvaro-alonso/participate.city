@@ -184,18 +184,34 @@ class Election extends React.Component {
     console.log(proof, inputs);
     const proofValues = Object.values(proof);
     console.log(proofValues);
-    await voteForCandidate(Web3.utils.asciiToHex(candidate), proofValues, inputs).send({
+    voteForCandidate(Web3.utils.asciiToHex(candidate), proofValues, inputs)
+    .send({
       from: this.account,
       gasPrice: 3000000000,
+    })
+    .on('error', (error) => {
+      this.setState({
+        status: error,
+      });
+    })
+    .on('transactionHash', (transactionHash) => {
+      console.log(transactionHash)
+    })
+    .on('receipt', async (receipt) => {
+      console.log(receipt);
+      console.log(`Election registered at: ${this.account}\nElection address: ${receipt.contractAddress}`);
+      this.getVotes();
+    })
+    .on('confirmation', (confirmationNumber, receipt) => {
+      console.log(receipt)
     });
-
   }
 
   render () {
     return (
       <div>
         <div className="table-responsive">
-          <h1>Voting App — Example Truffle Dapp</h1>
+          <h1>Election</h1>
 
           <div className="container">
             <p>election budget:</p>
@@ -221,7 +237,6 @@ class Election extends React.Component {
           </div>
 
           <div>
-    } 
             <button onClick={this.voteFor.bind(this)} >Vote</button>
             <Link to="/" ><button>Home</button></Link>
           </div>
