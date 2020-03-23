@@ -167,7 +167,7 @@ class Deployer extends React.Component {
       })
       .on('confirmation', (confirmationNumber, receipt) => {
         console.log(receipt)
-      })
+      });
     }
   }
 

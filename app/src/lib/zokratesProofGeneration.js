@@ -74,7 +74,7 @@ contract Voting is Verifier {
   bytes32[] public voters;
 
   // withdraw tocken variables
-  mapping (address => bool) votingRecord;
+  mapping (bytes32 => bool) votingRecord;
   event logWithdrawal(address receiver, uint amount);
 
   constructor(
@@ -106,7 +106,7 @@ contract Voting is Verifier {
   }
 
   // This function returns the total votes a candidate has received so far
-  function totalVotesFor(bytes32 candidate) public returns (uint256) {
+  function totalVotesFor(bytes32 candidate) public view returns (uint256) {
     require(validCandidate(candidate), "Invalid candidate name");
     return votesReceived[candidate];
   }
@@ -117,20 +117,13 @@ contract Voting is Verifier {
     bytes32 candidate,
     Proof memory proof,
     uint[1] memory input
-  ) public payable returns (bool) {
-    require(verifyTx(proof, input), "Incorrect proof given");
-    // votingRecord[msg.sender] = true;
+  ) public returns (bool) {
     require(validCandidate(candidate), "Invalid candidate name");
+    bytes32 hashedProof = serializeProof(proof, input);
+    require(unusedProof(hashedProof), "Proof already used");
+    require(verifyTx(proof, input), "Incorrect proof given");
+    votingRecord[hashedProof] = true;
     votesReceived[candidate] += 1;
-    // withdraw(msg.sender, 1 szabo);
-    return true;
-  }
-
-  function withdraw(address payable voter, uint amount) internal returns (bool success) {
-    if (address(this).balance < amount && votingRecord[voter] != true) return false;
-    votingRecord[voter] = false;
-    voter.transfer(amount);
-    emit logWithdrawal(voter, amount);
     return true;
   }
 
@@ -143,6 +136,26 @@ contract Voting is Verifier {
     return false;
   }
 
+  function serializeProof(Proof memory proof, uint256[1] memory input) internal pure returns (bytes32) {
+    return keccak256(abi.encodePacked(
+      proof.a.X,
+      proof.a.Y,
+      proof.b.X[0],
+      proof.b.X[1],
+      proof.b.Y[0],
+      proof.b.Y[1],
+      proof.c.X,
+      proof.c.Y,
+      input[0]));
+  }
+
+  function unusedProof(bytes32 proof) internal view returns (bool) {
+    if (votingRecord[proof] == true) {
+        return false;
+    } else {
+        return true;
+    }
+  }
 }
 `;
 
