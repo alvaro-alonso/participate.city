@@ -12,7 +12,7 @@ def combine256(field[2] values) -> (field[256]):
 	b = unpack128(values[1])
 	return [...a, ...b]
 
-def main(field[2] rootDigest, private field[2] pk, private field sk, private field[6] directionSelector, private field[2] leafDigest, private field[2] pathDigest0, private field[2] pathDigest1, private field[2] pathDigest2, private field[2] pathDigest3, private field[2] pathDigest4, private field[2] pathDigest5) -> (field):
+def main(field[2] rootDigest, private field[2] pk, private field sk, private field[4] directionSelector, private field[2] leafDigest, private field[2] pathDigest0, private field[2] pathDigest1, private field[2] pathDigest2, private field[2] pathDigest3) -> (field):
 
 	context = context()
 	1 == proofOfOwnership(pk, sk, context) 
@@ -25,8 +25,6 @@ def main(field[2] rootDigest, private field[2] pk, private field sk, private fie
 	pathHash1 = combine256(pathDigest1)
 	pathHash2 = combine256(pathDigest2)
 	pathHash3 = combine256(pathDigest3)
-	pathHash4 = combine256(pathDigest4)
-	pathHash5 = combine256(pathDigest5)
 
 	field[256] currentDigest = leafHash
 	preimage = multiplex(directionSelector[0], currentDigest, pathHash0)
@@ -45,16 +43,6 @@ def main(field[2] rootDigest, private field[2] pk, private field sk, private fie
 	currentDigest = sha256(lhs, rhs)
 
 	preimage = multiplex(directionSelector[3], currentDigest, pathHash3)
-	lhs = preimage[0..256]
-	rhs = preimage[256..512]
-	currentDigest = sha256(lhs, rhs)
-
-	preimage = multiplex(directionSelector[4], currentDigest, pathHash4)
-	lhs = preimage[0..256]
-	rhs = preimage[256..512]
-	currentDigest = sha256(lhs, rhs)
-
-	preimage = multiplex(directionSelector[5], currentDigest, pathHash5)
 	lhs = preimage[0..256]
 	rhs = preimage[256..512]
 	currentDigest = sha256(lhs, rhs)

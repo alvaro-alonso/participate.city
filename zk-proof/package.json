@@ -1,0 +1,17 @@
+{
+  "name": "zk-proof",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "babyjubjub": "^1.0.4",
+    "eosjs-ecc": "^4.0.7",
+    "merkletreejs": "^0.1.11",
+    "web3-utils": "^1.2.6"
+  }
+}
