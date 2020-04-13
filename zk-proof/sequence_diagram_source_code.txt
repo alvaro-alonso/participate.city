@@ -1,18 +1,30 @@
-title Authentication Protocol
 
 actor Voter
 actor Organizer
 participantspacing 15
 
-group #2f2e7b Registration Phase #white [Secure Channel]
-Voter->Organizer:voter prove elegiblity 
+group #2f6e7b Secure Channel #white
+
+group #2f2e7b User Registration #white
+Voter->Organizer: Register
 Voter<-Organizer:Ack
-box over Voter:Generates public/\nprivate key pair
-Voter->Organizer:sends public key
+box over Voter:Generates Ecc \n Public Keys
+Voter->Organizer: public key
 end
+
+end
+
 ==Election Start==
-group #2f2e7b Election #white [Public Blockchain]
-Organizer->TP:Merkle tree of public keys
-Voter->TP: zk-SNARKs proof (π)
-Voter<-TP: vote
+
+group #2f6e7b Public Blockchain #white
+
+group #2f2e7b Election Deployment #white
+Organizer->TP: H(public keys)
+end
+
+group #2f2e7b Vote Authentication #white
+Voter->TP: Proof of eligibility (zk)
+Voter<-TP: Vote
+end
+
 end
