@@ -1,12 +1,19 @@
 import React from 'react';
-import Web3 from "web3";
+import web3 from "web3";
 import { Link } from "react-router-dom";
 import MerkleTree from "merkletreejs";
 import { initialize } from 'zokrates-js';
 import * as wrapper from 'solc/wrapper';
 import ecc from 'eosjs-ecc';
 
+import RegistryArtifact from "./build/contracts/ElectionRegistry.json";
+
 import './App.css';
+import {
+  incorrectPublicKeyFormat,
+  hashPubKey,
+} from './lib/proofUtils';
+import { web3Provider, start } from './lib/connectionUtils';
 import { generateZokratesProof, votingCode, electionRegister } from './lib/zokratesProofGeneration';
 
 
@@ -14,16 +21,25 @@ class Deployer extends React.Component {
 
   constructor(props) {
     super(props);
-    this.web3 = props.web3;
-    this.register = props.register;
-    this.account = props.account;
+    this.provider = web3Provider(props.provider);
     this.state = { 
       status: '',
       budget: '',
+      register: props.register,
+      account: props.account,
       candidates: [],
       voters: [],
     };
-    console.log(props);
+    if (!props.register || !props.account) {
+      start(this.provider, RegistryArtifact).then((artifact) => {
+        const { artifactAddress, account } = artifact;
+        this.setState({
+          account,
+          register: artifactAddress,
+        });
+        console.log(this.state);
+      })
+    }
   }
 
   updateCandidateField(event){
@@ -64,17 +80,15 @@ class Deployer extends React.Component {
 
   addVoter() {
     let { pointX, pointY, voters } = this.state;
-    const x = Web3.utils.toBN(pointX), y = Web3.utils.toBN(pointY);
-    if (pointX.length > 77 || pointX.length < 76 || pointY.length > 77 || pointY.length < 76
-      || !(Web3.utils.isBN(x)) || !(Web3.utils.isBN(y))) {
+    if (incorrectPublicKeyFormat(pointX) || incorrectPublicKeyFormat(pointY)) {
       this.setState({
         status: 'Wrong Format of Public Key',
       });
       return;
     }
 
-    const num = [...(x.toArray()), ...(y.toArray())];
-    const insertedVoter = ecc.sha256(num);
+    
+    const insertedVoter = hashPubKey(pointX, pointY);
     if (voters.includes(insertedVoter)) {
       this.setState({
         status: 'voter already inserted',
@@ -91,13 +105,13 @@ class Deployer extends React.Component {
   }
 
   async deploy() {
-    const { budget, candidates, voters } = this.state;
+    const { budget, candidates, voters, register, account } = this.state;
     if (budget && candidates.length > 0 && voters.length > 0) {
       const tree = new MerkleTree(voters, ecc.sha256);
       tree.print();
       const root = '0x' + tree.getRoot().toString('hex');
       console.log(root);
-      const rootNumber = Web3.utils.hexToNumberString(root);
+      const rootNumber = web3.utils.hexToNumberString(root);
       const proofZok = generateZokratesProof(voters.length, rootNumber);
       console.log(proofZok);
       const zokratesProv = await initialize()
@@ -139,19 +153,19 @@ class Deployer extends React.Component {
       const solc = wrapper(window.Module);
       const output = JSON.parse(solc.compile(JSON.stringify(input), {import: findImports}));
       const { Voting } = output.contracts['voting.sol'];
-      const VotingContract = new this.web3.eth.Contract(Voting.abi);
+      const VotingContract = new this.provider.eth.Contract(Voting.abi);
       console.log(VotingContract);
       
       VotingContract.deploy({
         data: '0x' + Voting.evm.bytecode.object,
         arguments: [
-          this.register,
+          register,
           root,
           voters.map((voter) => '0x' + voter),
-          candidates.map((candidate) => Web3.utils.asciiToHex(candidate)),
+          candidates.map((candidate) => web3.utils.asciiToHex(candidate)),
         ],
       }).send({
-        from: this.account,
+        from: account,
         value: budget,
         gasPrice: 3000000000
       })
@@ -163,7 +177,7 @@ class Deployer extends React.Component {
       })
       .on('receipt', async (receipt) => {
         console.log(receipt);
-        console.log(`Election registered at: ${this.account}\nElection address: ${receipt.contractAddress}`);
+        console.log(`Election registered at: ${account}\nElection address: ${receipt.contractAddress}`);
       })
       .on('confirmation', (confirmationNumber, receipt) => {
         console.log(receipt)
