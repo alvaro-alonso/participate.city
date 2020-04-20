@@ -1,7 +1,7 @@
 
 actor Voter
 actor Organizer
-participantspacing 15
+participantspacing 18
 
 group #2f8e70 Secure Channel #white
 
