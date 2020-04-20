@@ -13,7 +13,8 @@ import {
   hashPubKey,
   calculateMerklePath,
   splitBN,
-} from './lib/utils';
+} from './lib/proofUtils';
+import { web3Provider, start } from './lib/connectionUtils';
 import { generateZokratesProof } from "./lib/zokratesProofGeneration";
 import VotingArtifact from "./build/contracts/Voting.json";
 
@@ -24,86 +25,61 @@ class Election extends React.Component {
 
   constructor(props) {
     super(props);
-    this.address = this.props.match.params.id;
+    const address = props.match.params.id;
+    this.provider =  web3Provider(props.provider);
     this.state = { 
       status: '',
+      address,
     };
-    if (window.ethereum) {
-      // use MetaMask's provider
-      this.web3 = new Web3(window.ethereum);
-      window.ethereum.enable();
-      console.log('ethereum detected');
-    } else {
-      this.web3 = new Web3( Web3.currentProvider || "http://127.0.0.1:7545");
-    }
-    this.start();
-  }
 
-
-  async start() {
-    try {
-      // get contract instance
-      const networkId = await this.web3.eth.net.getId();
-      const deployedNetwork = VotingArtifact.networks[networkId];
-      console.log(`network: ${networkId}\ndeployedNetwork: ${deployedNetwork}`);
-      this.meta = new this.web3.eth.Contract(
-        VotingArtifact.abi,
-        this.address,
-      );
-
-      // get accounts
-      const accounts = await this.web3.eth.getAccounts();
-      this.account = accounts[0];
-      this.getBudget();
-      await this.getCandidates();
-      this.getVotes();
-
-    } catch (error) {
-      console.error("Could not connect to contract or chain.");
-      console.error(error);
-    }
+    start(this.provider, VotingArtifact, address)
+      .then((artifact) => {
+        this.setState(artifact);
+        this.getBudget();
+        this.getCandidates()
+          .then(() => this.getVotes() );
+      });
+    
   }
 
   async getCandidates() {
-    const { getCandidates } = this.meta.methods;
+    const { getCandidates } = this.state.meta.methods;
     const candidateHexs = await getCandidates().call();
-    this.candidates = candidateHexs.map((candidate) => Web3.utils.hexToUtf8(candidate));
+    const candidates = candidateHexs.map((candidate) => Web3.utils.hexToUtf8(candidate));
+    this.setState({ candidates });
   }
 
   async getVotes() {
-    const { totalVotesFor } = this.meta.methods;
+    const { candidates, meta } = this.state;
+    const { totalVotesFor } = meta.methods;
     const balanceTable = document.getElementById("voteTable");
 
-    const results = await Promise.all(this.candidates.map((candidate) => totalVotesFor(Web3.utils.asciiToHex(candidate)).call()));
+    const results = await Promise.all(candidates.map((candidate) => totalVotesFor(Web3.utils.asciiToHex(candidate)).call()));
     balanceTable.innerHTML = '';
     let rowNum = 0;
     for (const votes of results) {
       const row = balanceTable.insertRow(rowNum);
       const nameCell = row.insertCell(0);
       const balanceCell = row.insertCell(1);
-      nameCell.innerHTML = this.candidates[rowNum];
+      nameCell.innerHTML = candidates[rowNum];
       balanceCell.innerHTML = votes;
       rowNum += 1;
     }
   }
 
   async getBudget() {
-    const { getBalance } = this.meta.methods;
+    const { getBalance } = this.state.meta.methods;
     const budgetDiv = document.getElementById("budget");
     const budget = await getBalance().call();
     budgetDiv.innerHTML = budget;
   }
 
   async voteFor() {
-    const { candidates } = this;
-    const { getVoters, getRoot, voteForCandidate } = this.meta.methods;
-
-    const pointX = document.getElementById("pointX").value, pointY = document.getElementById("pointY").value;
-    const privateKey = document.getElementById("privateKey").value;
-    const candidate = document.getElementById("candidate").value;
+    const { candidate, candidates, privKey, pointX, pointY, meta, account } = this.state
+    const { getVoters, getRoot, voteForCandidate } = meta.methods;
 
     // check that the keys have the right length and is a bigNumber
-    if (incorrectPublicKeyFormat(pointX) || incorrectPublicKeyFormat(pointY) || incorrectPrivateKeyFormat(privateKey)) {
+    if (incorrectPublicKeyFormat(pointX) || incorrectPublicKeyFormat(pointY) || incorrectPrivateKeyFormat(privKey)) {
       this.setState({
         status: 'invalid format of arguments',
       });
@@ -113,7 +89,7 @@ class Election extends React.Component {
     // check that candidate name is valid
     if(!(candidates.includes(candidate))) {
       this.setState({
-        status: `Wrong candidate. Please choose between ${this.candidates}`,
+        status: `Wrong candidate. Please choose between ${candidates}`,
       });
       return;
     } else {
@@ -157,7 +133,7 @@ class Election extends React.Component {
     console.log(treePath.map(node => splitBN(node)));
     const witness = [
       [pointX.toString(), pointY.toString()],
-      privateKey.toString(),
+      privKey.toString(),
       merklePath,
       splitBN(Web3.utils.hexToBytes('0x' + hashedPubKey)),
     ].concat(treePath.map(node => splitBN(node)));
@@ -185,7 +161,7 @@ class Election extends React.Component {
     console.log(proofValues);
     voteForCandidate(Web3.utils.asciiToHex(candidate), proofValues, inputs)
     .send({
-      from: this.account,
+      from: account,
       gasPrice: 3000000000,
     })
     .on('error', (error) => {
@@ -204,6 +180,23 @@ class Election extends React.Component {
     .on('confirmation', (confirmationNumber, receipt) => {
       console.log(receipt)
     });
+  }
+
+
+  updateCandidate(event){
+    this.setState({ candidate: event.target.value });
+  }
+
+  updatePrivKey(event){
+    this.setState({ privKey: event.target.value });
+  }
+
+  updatePointX(event){
+    this.setState({ pointX: event.target.value });
+  }
+
+  updatePointY(event){
+    this.setState({ pointY: event.target.value });
   }
 
   render () {
@@ -225,14 +218,14 @@ class Election extends React.Component {
         <div className="container" id="actions">
           <div className="container" id="candidate-container" >
             <h3> Candidate </h3>
-            <input type="text" id="candidate" placeholder="choose a candidate" />
+            <input type="text" id="candidate" value={this.state.candidate} onChange={this.updateCandidate.bind(this)} placeholder="choose a candidate" />
           </div>
 
           <div className="container" id="proof">
             <h3> Proof </h3>
-            <input type="text" id="privateKey" placeholder="private key" />
-            <input type="text" id="pointX" placeholder="public key #1" />
-            <input type="text" id="pointY" placeholder="public key #2" />
+            <input type="text" id="privateKey" value={this.state.privKey} onChange={this.updatePrivKey.bind(this)} placeholder="private key" />
+            <input type="text" id="pointX" value={this.state.pointX} onChange={this.updatePointX.bind(this)} placeholder="public key #1" />
+            <input type="text" id="pointY" value={this.state.pointY} onChange={this.updatePointY.bind(this)} placeholder="public key #2" />
           </div>
 
           <div>

@@ -1,5 +1,4 @@
 import React from 'react';
-import Web3 from "web3";
 import {
   BrowserRouter as Router,
   Switch,
@@ -9,51 +8,25 @@ import {
 
 import Election from "./Election";
 import Deployer from "./Deployer";
-import Artifact from "./build/contracts/ElectionRegistry.json";
+import RegistryArtifact from "./build/contracts/ElectionRegistry.json";
 import './App.css';
+import { web3Provider, start } from './lib/connectionUtils';
 
 
 class Finder extends React.Component {
 
   constructor(props) {
     super(props);
+    this.provider = web3Provider();
     this.state = { 
       status: '',
       hide: props.hide ? props.hide: false,
     };
-    if (window.ethereum) {
-      // use MetaMask's provider
-      this.web3 = new Web3(window.ethereum);
-      window.ethereum.enable();
-      console.log('ethereum detected');
-      console.log(this.web3);
-    } else {
-      this.web3 = new Web3( Web3.currentProvider || "http://127.0.0.1:7545");
-    }
-    this.start();
-  }
-
-  async start() {
-    try {
-      // get contract instance
-      const networkId = await this.web3.eth.net.getId();
-      const deployedNetwork = Artifact.networks[networkId];
-      console.log(`network: ${networkId}\ndeployedNetwork: ${deployedNetwork}`);
-      // get accounts
-      const accounts = await this.web3.eth.getAccounts();
-      this.setState({
-        meta: new this.web3.eth.Contract(
-          Artifact.abi,
-          deployedNetwork.address,
-        ),
-        register: deployedNetwork.address,
-        account: accounts[0],
+    // use MetaMask's provider
+    start(this.provider, RegistryArtifact)
+      .then((artifact) => {
+        this.setState(artifact);
       });
-
-    } catch (error) {
-      console.error("Could not connect to contract or chain.");
-      console.error(error);
-    }
   }
 
   showElections() {
@@ -108,7 +81,7 @@ class Finder extends React.Component {
   render() {
     const {
       hide,
-      register,
+      artifactAdress,
       account,
       resultNumber,
       searchResults,
@@ -145,8 +118,8 @@ class Finder extends React.Component {
 
         <div>
           <Switch>
-            <Route path="/election/:id" children={<Election />} ></Route>
-            <Route path="/deploy_election" children={<Deployer register={register} account={account} web3={this.web3} />}></Route>
+            <Route path="/election/:id" children={<Election provider={this.provider} />} ></Route>
+            <Route path="/deploy_election" children={<Deployer register={artifactAdress} account={account} provider={this.provider} />}></Route>
             <Route path="/" onClick={this.showFinder.bind(this)} ></Route>
           </Switch>
         </div>
