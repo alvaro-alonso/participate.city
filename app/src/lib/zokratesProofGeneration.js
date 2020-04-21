@@ -1,5 +1,5 @@
 
-const generateZokratesProof = (voterNumber, treeRoot) => {
+const generateZokratesProof = (voterNumber) => {
   
   const treeDepth = Math.ceil(Math.log2(voterNumber));
   const iterations =[...Array(treeDepth).keys()];
@@ -30,7 +30,7 @@ const generateZokratesProof = (voterNumber, treeRoot) => {
       b = unpack128(values[1])
       return [...a, ...b]
 
-  def main(private field[2] pk, private field sk, private field[${treeDepth}] directionSelector, private field[2] leafDigest, ${treePathInputParams}) -> (field):
+  def main(field[2] rootDigest, private field[2] pk, private field sk, private field[${treeDepth}] directionSelector, private field[2] leafDigest, ${treePathInputParams}) -> (field):
 
       context = context()
       1 == proofOfOwnership(pk, sk, context) 
@@ -43,7 +43,9 @@ const generateZokratesProof = (voterNumber, treeRoot) => {
 
       field[256] currentDigest = leafHash
       ${treePathGenerator}
-      ${treeRoot} == pack256(currentDigest)
+
+      treeRoot = combine256(rootDigest)
+      treeRoot == currentDigest
 
       return 1
   `;
@@ -53,8 +55,8 @@ const votingCode = `
 pragma solidity 0.6.1;
 pragma experimental ABIEncoderV2;
 
-import 'verifier.sol';
-import 'electionRegistry.sol';
+import './verifier.sol';
+import './electionRegistry.sol';
 
 
 contract Voting is Verifier {
@@ -116,9 +118,11 @@ contract Voting is Verifier {
   function voteForCandidate(
     bytes32 candidate,
     Proof memory proof,
-    uint[1] memory input
+    uint[3] memory input
   ) public returns (bool) {
     require(validCandidate(candidate), "Invalid candidate name");
+    bytes32 electionRoot = bytes32((input[0] << (16 * 8)) + input[1]);
+    require(electionRoot == merkleRoot, "Invalid election");
     bytes32 hashedProof = serializeProof(proof, input);
     require(unusedProof(hashedProof), "Proof already used");
     require(verifyTx(proof, input), "Incorrect proof given");
@@ -136,7 +140,7 @@ contract Voting is Verifier {
     return false;
   }
 
-  function serializeProof(Proof memory proof, uint256[1] memory input) internal pure returns (bytes32) {
+  function serializeProof(Proof memory proof, uint256[3] memory input) internal pure returns (bytes32) {
     return keccak256(abi.encodePacked(
       proof.a.X,
       proof.a.Y,
@@ -146,7 +150,10 @@ contract Voting is Verifier {
       proof.b.Y[1],
       proof.c.X,
       proof.c.Y,
-      input[0]));
+      input[0],
+      input[1],
+      input[2]
+    ));
   }
 
   function unusedProof(bytes32 proof) internal view returns (bool) {

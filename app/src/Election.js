@@ -101,9 +101,8 @@ class Election extends React.Component {
     let voters = await getVoters().call();
     voters = voters.map((voter) => voter.substring(2));
     const treeRoot = await getRoot().call();
-    const rootNumber = Web3.utils.hexToNumberString(treeRoot);
     const zokratesProvider = await initialize();
-    const zokratesCode = generateZokratesProof(voters.length, rootNumber);
+    const zokratesCode = generateZokratesProof(voters.length);
     const program = await zokratesProvider.compile(zokratesCode, "main", () => {});
     console.log(zokratesCode);
     const hashedPubKey = hashPubKey(pointX, pointY); 
@@ -132,6 +131,7 @@ class Election extends React.Component {
     console.log(treePath);
     console.log(treePath.map(node => splitBN(node)));
     const witness = [
+      splitBN(Web3.utils.hexToBytes(treeRoot)),
       [pointX.toString(), pointY.toString()],
       privKey.toString(),
       merklePath,
@@ -165,8 +165,9 @@ class Election extends React.Component {
       gasPrice: 3000000000,
     })
     .on('error', (error) => {
+      console.log(error);
       this.setState({
-        status: error,
+        status: '501: something went wrong',
       });
     })
     .on('transactionHash', (transactionHash) => {
