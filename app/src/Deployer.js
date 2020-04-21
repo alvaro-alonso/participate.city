@@ -110,9 +110,7 @@ class Deployer extends React.Component {
       const tree = new MerkleTree(voters, ecc.sha256);
       tree.print();
       const root = '0x' + tree.getRoot().toString('hex');
-      console.log(root);
-      const rootNumber = web3.utils.hexToNumberString(root);
-      const proofZok = generateZokratesProof(voters.length, rootNumber);
+      const proofZok = generateZokratesProof(voters.length);
       console.log(proofZok);
       const zokratesProv = await initialize()
       // use proofZok in production
