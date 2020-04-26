@@ -1,11 +1,11 @@
 pragma solidity 0.6.1;
 pragma experimental ABIEncoderV2;
 
-import './verifier.sol';
-import './electionRegistry.sol';
+import './Verifier.sol';
+import './ElectionRegistry.sol';
 
 
-contract Voting is Verifier {
+contract Voting {
   /* mapping field below is equivalent to an associative array or hash.
   The key of the mapping is candidate name stored as type bytes32 and value is
   an unsigned integer to store the vote count
@@ -16,25 +16,27 @@ contract Voting is Verifier {
   /* Solidity doesn't let you pass in an array of strings in the constructor (yet).
   We will use an array of bytes32 instead to store the list of candidates
   */
-
+  address public verifier;
   bytes32 public merkleRoot;
   bytes32[] public candidateList;
-  bytes32[] public voters;
+  bytes32[] private voters;
 
   // withdraw tocken variables
   mapping (bytes32 => bool) votingRecord;
   event logWithdrawal(address receiver, uint amount);
 
   constructor(
-    address registryAdd,
+    address registryAddress,
+    address verifierAddress,
     bytes32 root,
     bytes32[] memory registry,
     bytes32[] memory candidateNames
   ) public payable {
+    verifier = verifierAddress;
     merkleRoot = root;
     voters = registry;
     candidateList = candidateNames;
-    ElectionRegistry(registryAdd).register(msg.sender, address(this));
+    ElectionRegistry(registryAddress).registerElection(msg.sender, address(this));
   }
 
   function getCandidates() public view returns (bytes32[] memory) {
@@ -63,7 +65,7 @@ contract Voting is Verifier {
   // is equivalent to casting a vote
   function voteForCandidate(
     bytes32 candidate,
-    Proof memory proof,
+    Verifier.Proof memory proof,
     uint[3] memory input
   ) public returns (bool) {
     require(validCandidate(candidate), "Invalid candidate name");
@@ -71,7 +73,7 @@ contract Voting is Verifier {
     require(electionRoot == merkleRoot, "Invalid election");
     bytes32 hashedProof = serializeProof(proof, input);
     require(unusedProof(hashedProof), "Proof already used");
-    require(verifyTx(proof, input), "Incorrect proof given");
+    require(Verifier(verifier).verifyTx(proof, input), "Incorrect proof given");
     votingRecord[hashedProof] = true;
     votesReceived[candidate] += 1;
     return true;
@@ -86,7 +88,7 @@ contract Voting is Verifier {
     return false;
   }
 
-  function serializeProof(Proof memory proof, uint256[3] memory input) internal pure returns (bytes32) {
+  function serializeProof(Verifier.Proof memory proof, uint256[3] memory input) internal pure returns (bytes32) {
     return keccak256(abi.encodePacked(
       proof.a.X,
       proof.a.Y,

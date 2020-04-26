@@ -15,7 +15,7 @@ import {
   splitBN,
 } from './lib/proofUtils';
 import { web3Provider, start } from './lib/connectionUtils';
-import { generateZokratesProof } from "./lib/zokratesProofGeneration";
+import { generateZokratesSourceCode, calculateTreeDepth } from "./lib/zokratesProofGeneration";
 import VotingArtifact from "./build/contracts/Voting.json";
 
 const invalidProofMsg = 'Incorrect proof of eligibility';
@@ -33,25 +33,29 @@ class Election extends React.Component {
     };
 
     start(this.provider, VotingArtifact, address)
-      .then((artifact) => {
-        this.setState(artifact);
+      .then((electionArt) => {
+        const { artifact, artifactAddress, account } = electionArt;
+        this.setState({
+          account,
+          election: artifact,
+          electionAddress: artifactAddress,
+        });
         this.getBudget();
         this.getCandidates()
           .then(() => this.getVotes() );
-      });
-    
+    });
   }
 
   async getCandidates() {
-    const { getCandidates } = this.state.meta.methods;
+    const { getCandidates } = this.state.election.methods;
     const candidateHexs = await getCandidates().call();
     const candidates = candidateHexs.map((candidate) => Web3.utils.hexToUtf8(candidate));
     this.setState({ candidates });
   }
 
   async getVotes() {
-    const { candidates, meta } = this.state;
-    const { totalVotesFor } = meta.methods;
+    const { candidates, election } = this.state;
+    const { totalVotesFor } = election.methods;
     const balanceTable = document.getElementById("voteTable");
 
     const results = await Promise.all(candidates.map((candidate) => totalVotesFor(Web3.utils.asciiToHex(candidate)).call()));
@@ -68,15 +72,15 @@ class Election extends React.Component {
   }
 
   async getBudget() {
-    const { getBalance } = this.state.meta.methods;
+    const { getBalance } = this.state.election.methods;
     const budgetDiv = document.getElementById("budget");
     const budget = await getBalance().call();
     budgetDiv.innerHTML = budget;
   }
 
   async voteFor() {
-    const { candidate, candidates, privKey, pointX, pointY, meta, account } = this.state
-    const { getVoters, getRoot, voteForCandidate } = meta.methods;
+    const { candidate, candidates, privKey, pointX, pointY, election, account } = this.state
+    const { getVoters, getRoot, voteForCandidate } = election.methods;
 
     // check that the keys have the right length and is a bigNumber
     if (incorrectPublicKeyFormat(pointX) || incorrectPublicKeyFormat(pointY) || incorrectPrivateKeyFormat(privKey)) {
@@ -102,7 +106,7 @@ class Election extends React.Component {
     voters = voters.map((voter) => voter.substring(2));
     const treeRoot = await getRoot().call();
     const zokratesProvider = await initialize();
-    const zokratesCode = generateZokratesProof(voters.length);
+    const zokratesCode = generateZokratesSourceCode(calculateTreeDepth(voters.length));
     const program = await zokratesProvider.compile(zokratesCode, "main", () => {});
     console.log(zokratesCode);
     const hashedPubKey = hashPubKey(pointX, pointY); 

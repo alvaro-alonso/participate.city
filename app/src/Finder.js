@@ -24,8 +24,14 @@ class Finder extends React.Component {
     };
     // use MetaMask's provider
     start(this.provider, RegistryArtifact)
-      .then((artifact) => {
-        this.setState(artifact);
+      .then((registerArt) => {
+        const { artifact, artifactAddress, account } = registerArt;
+        this.setState({
+          account,
+          register: artifact,
+          registerAddress: artifactAddress,
+        });
+        console.log(this.state);
       });
   }
 
@@ -53,7 +59,7 @@ class Finder extends React.Component {
         searchedAccount: institution,
         searched: '',
       });
-      const { findContract } = this.state.meta.methods;
+      const { findContract } = this.state.register.methods;
       const searchResults = await findContract(institution).call();
 
       this.setState({

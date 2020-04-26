@@ -1,7 +1,11 @@
 
-const generateZokratesProof = (voterNumber) => {
+
+const calculateTreeDepth = (voterNumber) => {
+  return Math.ceil(Math.log2(voterNumber));
+}
+
+const generateZokratesSourceCode = (treeDepth) => {
   
-  const treeDepth = Math.ceil(Math.log2(voterNumber));
   const iterations =[...Array(treeDepth).keys()];
   const treeIteration = (i) => {
     return `
@@ -49,6 +53,18 @@ const generateZokratesProof = (voterNumber) => {
 
       return 1
   `;
+}
+
+const generateZokratesSetup = async (voterNumber, zokrates) => {
+  const program = generateZokratesSourceCode(voterNumber);
+  console.log(program);
+  
+  // use proofZok in production
+  const compilation = await zokrates.compile(program, "main", () => {});
+  console.log(zokrates);
+  console.log(compilation);
+  const setup = await zokrates.setup(compilation.program);
+  return setup;
 }
 
 const votingCode = `
@@ -185,4 +201,4 @@ contract ElectionRegistry {
 }
 `;
 
-export { generateZokratesProof, votingCode, electionRegister }
+export { generateZokratesSetup, generateZokratesSourceCode, calculateTreeDepth, votingCode, electionRegister }
