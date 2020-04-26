@@ -27,7 +27,7 @@ export const start = async (provider, artifact, artifactAddress) => {
     // get accounts
     const accounts = await provider.eth.getAccounts();
     return {
-      meta: new provider.eth.Contract(
+      artifact: new provider.eth.Contract(
         artifact.abi,
         address,
       ),

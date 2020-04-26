@@ -2,11 +2,12 @@ import React from 'react';
 import web3 from "web3";
 import { Link } from "react-router-dom";
 import MerkleTree from "merkletreejs";
-import { initialize } from 'zokrates-js';
-import * as wrapper from 'solc/wrapper';
 import ecc from 'eosjs-ecc';
 
 import RegistryArtifact from "./build/contracts/ElectionRegistry.json";
+import VotingArtifact from "./build/contracts/Voting.json";
+import VerifierArtifact from "./build/contracts/Verifier.json";
+import VerifierGammas from "./build/verifierGammas.json";
 
 import './App.css';
 import {
@@ -14,7 +15,7 @@ import {
   hashPubKey,
 } from './lib/proofUtils';
 import { web3Provider, start } from './lib/connectionUtils';
-import { generateZokratesProof, votingCode, electionRegister } from './lib/zokratesProofGeneration';
+import { calculateTreeDepth } from './lib/zokratesProofGeneration';
 
 
 class Deployer extends React.Component {
@@ -31,11 +32,12 @@ class Deployer extends React.Component {
       voters: [],
     };
     if (!props.register || !props.account) {
-      start(this.provider, RegistryArtifact).then((artifact) => {
-        const { artifactAddress, account } = artifact;
+      start(this.provider, RegistryArtifact).then((registerArt) => {
+        const { artifact, artifactAddress, account } = registerArt;
         this.setState({
           account,
-          register: artifactAddress,
+          register: artifact,
+          registerAddress: artifactAddress,
         });
         console.log(this.state);
       })
@@ -105,59 +107,52 @@ class Deployer extends React.Component {
   }
 
   async deploy() {
-    const { budget, candidates, voters, register, account } = this.state;
+    const { budget, candidates, voters, register, registerAddress, account } = this.state;
     if (budget && candidates.length > 0 && voters.length > 0) {
+      const { findVerifier } = register.methods;
+      const treeDepth = calculateTreeDepth(voters.length);
+      let verifierAddress = await findVerifier(treeDepth).call();
+      console.log(verifierAddress);
+
+      if (web3.utils.toBN(verifierAddress) <= 0)  {
+        const gamma = VerifierGammas[treeDepth.toString()];
+        if (!gamma) {
+          this.setState({
+            status: "election size currently not support",
+          })
+          return;
+        }
+
+        const verifierContract = new this.provider.eth.Contract(VerifierArtifact.abi);
+        const verifier = await verifierContract.deploy({
+          data: VerifierArtifact.bytecode,
+          arguments: [
+            gamma,          
+            treeDepth,
+            registerAddress,
+          ],
+        }).send({
+          from: account,
+          gasPrice: 3000000000
+        })
+
+        console.log(verifier);
+        verifierAddress = verifier._address;
+
+      } 
+
       const tree = new MerkleTree(voters, ecc.sha256);
       tree.print();
       const root = '0x' + tree.getRoot().toString('hex');
-      const proofZok = generateZokratesProof(voters.length);
-      console.log(proofZok);
-      const zokratesProv = await initialize()
-      // use proofZok in production
-      const proof = await zokratesProv.compile(proofZok, "main", () => {});
-      console.log(zokratesProv)
-      console.log(proof);
-      const setup = await zokratesProv.setup(proof.program);
-      const verifier = zokratesProv.exportSolidityVerifier(setup.vk, true);
-      console.log(verifier);
-      var input = {
-        language: 'Solidity',
-        sources: {
-          'voting.sol': {
-            content: votingCode,
-          },
-        },
-        settings: {
-          outputSelection: {
-            '*': {
-              '*': ['*']
-            }
-          }
-        } 
-      };
-
-      function findImports(path) {
-        if (path === 'verifier.sol')
-          return {
-            contents: verifier
-          };
-        else if (path === 'electionRegistry.sol')
-          return {
-            contents: electionRegister
-          };
-        else return { error: 'File not found' };
-      }
-
-      const solc = wrapper(window.Module);
-      const output = JSON.parse(solc.compile(JSON.stringify(input), {import: findImports}));
-      const { Voting } = output.contracts['voting.sol'];
-      const VotingContract = new this.provider.eth.Contract(Voting.abi);
+      
+      const VotingContract = new this.provider.eth.Contract(VotingArtifact.abi);
       console.log(VotingContract);
       
       VotingContract.deploy({
-        data: '0x' + Voting.evm.bytecode.object,
+        data: VotingArtifact.bytecode,
         arguments: [
-          register,
+          registerAddress,
+          verifierAddress,
           root,
           voters.map((voter) => '0x' + voter),
           candidates.map((candidate) => web3.utils.asciiToHex(candidate)),

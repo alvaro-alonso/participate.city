@@ -20,21 +20,28 @@ const candidates2 = ['Vishnu', 'Jon', 'Maria'];
 const setup = { value: 1000000000000000, gas: 6700000 };
 
 module.exports = async function(deployer) {
-  deployer.deploy(BN256G2);
-  deployer.deploy(Pairing);
-  deployer.link(BN256G2, Verifier);
-  deployer.deploy(Verifier);
-  deployer.link(BN256G2, Voting);
-
   await deployer.deploy(Register);
-  const registerAdd = await Register.deployed();
+  const register = await Register.deployed();
 
-  await deployer.deploy(
-    Voting,
-    registerAdd.address,
-    web3.utils.asciiToHex('treeRoot'),
-    voters,
-    toHex(candidates2),
-    setup
-  );
+  // deployer.deploy(BN256G2);
+  // deployer.deploy(Pairing);
+  // deployer.link(BN256G2, Verifier);
+  // deployer.link(BN256G2, Voting);
+
+
+  // const powers = [2, 3, 5, 6];
+  // for (let i = 0; i < 4; i++) {
+  //   register.registerVerifier(Math.pow(2, powers[i]), verifierAdd[i].address);
+  // }
+
+
+  // deployer.deploy(Verifier),
+  // deployer.deploy(
+  //   Voting,
+  //   register.address,
+  //   web3.utils.asciiToHex('treeRoot'),
+  //   voters,
+  //   toHex(candidates2),
+  //   setup
+  // );
 };

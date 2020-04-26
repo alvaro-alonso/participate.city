@@ -2,16 +2,27 @@ pragma solidity ^0.6.1;
 
 
 contract ElectionRegistry {
-  mapping(address => address[]) user_elections;
-  event logRegistration(address election);
+  mapping(address => address[]) elections;
+  mapping(uint => address) verifiers;
+  event logRegistration(address electionAdd);
 
-  function register(address owner, address election) public returns (uint) {
-    user_elections[owner].push(election); // -1 is very important
-    // emit logRegistration(election);
+  function registerElection(address owner, address electionAdd) public returns (uint) {
+    elections[owner].push(electionAdd); // -1 is very important
+    emit logRegistration(electionAdd);
     return 1;
   }
 
-  function findContract(address user) public returns (address[] memory){
-    return user_elections[user];
+  function registerVerifier(uint size, address electionAdd) public returns (bool) {
+    require(verifiers[size] == address(0), "verifier contract already exists");
+    verifiers[size] = electionAdd;
+    return true;
+  }
+
+  function findContract(address user) public view returns (address[] memory) {
+    return elections[user];
+  }
+
+  function findVerifier(uint size) public view returns (address) {
+    return verifiers[size];
   }
 }
