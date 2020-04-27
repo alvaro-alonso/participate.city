@@ -59,8 +59,8 @@ class Finder extends React.Component {
         searchedAccount: institution,
         searched: '',
       });
-      const { findContract } = this.state.register.methods;
-      const searchResults = await findContract(institution).call();
+      const { findElection } = this.state.register.methods;
+      const searchResults = await findElection(institution).call();
 
       this.setState({
         status: '',
