@@ -18,7 +18,7 @@ contract ElectionRegistry {
     return true;
   }
 
-  function findContract(address user) public view returns (address[] memory) {
+  function findElection(address user) public view returns (address[] memory) {
     return elections[user];
   }
 

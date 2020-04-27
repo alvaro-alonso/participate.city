@@ -113,8 +113,14 @@ class Deployer extends React.Component {
       const treeDepth = calculateTreeDepth(voters.length);
       let verifierAddress = await findVerifier(treeDepth).call();
       console.log(verifierAddress);
+      const gasPrice = await this.provider.eth.getGasPrice();
 
       if (web3.utils.toBN(verifierAddress) <= 0)  {
+
+        this.setState({
+          status: "Election verifier has not been deployed yet. deploying..."
+        });  
+
         const gamma = VerifierGammas[treeDepth.toString()];
         if (!gamma) {
           this.setState({
@@ -133,13 +139,17 @@ class Deployer extends React.Component {
           ],
         }).send({
           from: account,
-          gasPrice: 3000000000
+          gasPrice,
         })
 
         console.log(verifier);
         verifierAddress = verifier._address;
 
       } 
+
+      this.setState({
+        status: "Deploying election..."
+      }); 
 
       const tree = new MerkleTree(voters, ecc.sha256);
       tree.print();
@@ -160,7 +170,7 @@ class Deployer extends React.Component {
       }).send({
         from: account,
         value: budget,
-        gasPrice: 3000000000
+        gasPrice,
       })
       .on('error', (error) => {
         console.log(error)

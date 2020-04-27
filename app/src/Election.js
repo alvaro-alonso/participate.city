@@ -1,5 +1,5 @@
 import React from 'react';
-import Web3 from "web3";
+import web3 from "web3";
 import { withRouter } from "react-router";
 import { Link } from "react-router-dom";
 import MerkleTree from "merkletreejs";
@@ -49,7 +49,7 @@ class Election extends React.Component {
   async getCandidates() {
     const { getCandidates } = this.state.election.methods;
     const candidateHexs = await getCandidates().call();
-    const candidates = candidateHexs.map((candidate) => Web3.utils.hexToUtf8(candidate));
+    const candidates = candidateHexs.map((candidate) => web3.utils.hexToUtf8(candidate));
     this.setState({ candidates });
   }
 
@@ -58,7 +58,7 @@ class Election extends React.Component {
     const { totalVotesFor } = election.methods;
     const balanceTable = document.getElementById("voteTable");
 
-    const results = await Promise.all(candidates.map((candidate) => totalVotesFor(Web3.utils.asciiToHex(candidate)).call()));
+    const results = await Promise.all(candidates.map((candidate) => totalVotesFor(web3.utils.asciiToHex(candidate)).call()));
     balanceTable.innerHTML = '';
     let rowNum = 0;
     for (const votes of results) {
@@ -135,11 +135,11 @@ class Election extends React.Component {
     console.log(treePath);
     console.log(treePath.map(node => splitBN(node)));
     const witness = [
-      splitBN(Web3.utils.hexToBytes(treeRoot)),
+      splitBN(web3.utils.hexToBytes(treeRoot)),
       [pointX.toString(), pointY.toString()],
       privKey.toString(),
       merklePath,
-      splitBN(Web3.utils.hexToBytes('0x' + hashedPubKey)),
+      splitBN(web3.utils.hexToBytes('0x' + hashedPubKey)),
     ].concat(treePath.map(node => splitBN(node)));
     console.log(witness);
     let witnessOut;
@@ -157,16 +157,21 @@ class Election extends React.Component {
       return;
     }
 
+    const proofStart = performance.now();
     const { pk } = await zokratesProvider.setup(program.program);
     const proofJSON = await zokratesProvider.generateProof(program.program, witnessOut.witness, pk);
     const { proof, inputs } = JSON.parse(proofJSON);
     console.log(proof, inputs);
     const proofValues = Object.values(proof);
+    const proofEnd = performance.now();
+    const proofDuration = proofEnd - proofStart;
+    console.log(`Time needed to generate proof: ${proofDuration}`);
     console.log(proofValues);
-    voteForCandidate(Web3.utils.asciiToHex(candidate), proofValues, inputs)
+    const gasPrice = await this.provider.eth.getGasPrice();
+    voteForCandidate(web3.utils.asciiToHex(candidate), proofValues, inputs)
     .send({
       from: account,
-      gasPrice: 3000000000,
+      gasPrice,
     })
     .on('error', (error) => {
       console.log(error);
