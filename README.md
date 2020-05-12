@@ -7,6 +7,14 @@ The code related to the zero knowledge proof of membership can be found under [z
 
 # SETUP
 
+## start Dapp:
+The contracts of the Dapp are deployed in the Ropsten network. To start the App run:
+
+    $ cd app
+    $ npm start
+
+Go to http://localhost:3000/ and log in with metamask on the browser. Make sure the Ropsten network is set in metamask
+
 ## Test Locally
 
 install dependencies:
@@ -16,10 +24,6 @@ install dependencies:
 start local blockchain (ganache):
 
     $ app/node_modules/.bin/ganache-cli --port 7545
-
-start Dapp (webpack):
-
-    $ cd app && npm run dev
 
 migrate smart contracts:
 
@@ -31,11 +35,6 @@ blockchain console:
 
 use ganache account on metamask:
 
-1. copy Mnemonic phase from terminal displayed when ganache server is booted
-2. click recover account with Mnemonic phase
-3. insert new password (12345678)
-4. choose network ganache local on browser
-5. import one of ganaches private keys
 
 # Generate New zk-proof
 
