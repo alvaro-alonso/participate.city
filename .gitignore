@@ -63,3 +63,6 @@ build/contracts
 app/package-lock.json
 .vscode
 .ipynb_checkpoints
+
+# compiled programs
+.out*
