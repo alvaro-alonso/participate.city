@@ -11,15 +11,12 @@ The code related to the zero knowledge proof of membership can be found under [z
 The contracts of the Dapp are deployed in the Ropsten network. To start the App run:
 
     $ cd app
+    $ npm install
     $ npm start
 
 Go to http://localhost:3000/ and log in with metamask on the browser. Make sure the Ropsten network is set in metamask
 
 ## Test Locally
-
-install dependencies:
-
-    $ cd app && npm install
 
 start local blockchain (ganache):
 
