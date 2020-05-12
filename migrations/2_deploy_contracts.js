@@ -23,25 +23,4 @@ module.exports = async function(deployer) {
   await deployer.deploy(Register);
   const register = await Register.deployed();
 
-  // deployer.deploy(BN256G2);
-  // deployer.deploy(Pairing);
-  // deployer.link(BN256G2, Verifier);
-  // deployer.link(BN256G2, Voting);
-
-
-  // const powers = [2, 3, 5, 6];
-  // for (let i = 0; i < 4; i++) {
-  //   register.registerVerifier(Math.pow(2, powers[i]), verifierAdd[i].address);
-  // }
-
-
-  // deployer.deploy(Verifier),
-  // deployer.deploy(
-  //   Voting,
-  //   register.address,
-  //   web3.utils.asciiToHex('treeRoot'),
-  //   voters,
-  //   toHex(candidates2),
-  //   setup
-  // );
 };

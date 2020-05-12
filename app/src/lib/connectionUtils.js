@@ -21,6 +21,7 @@ export const start = async (provider, artifact, artifactAddress) => {
   try {
     // get contract instance
     const networkId = await provider.eth.net.getId();
+    console.log(networkId);
     const deployedNetwork = artifact.networks[networkId];
     const address = artifactAddress || deployedNetwork.address;
     console.log(`network: ${networkId}\ndeployedNetwork: ${deployedNetwork}`);
