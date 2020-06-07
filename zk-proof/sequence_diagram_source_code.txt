@@ -1,15 +1,17 @@
 
+fontfamily mono
+
 actor Voter
 actor Organizer
 participantspacing 18
 
-group #2f8e70 Secure Channel #white
+group #2f8e70 ++Secure Channel++ #white
 
 group #2f2e7b User Registration #white
-Voter->Organizer: Register
-Voter<-Organizer:Ack
-box over Voter:Generates Ecc \n Public Keys
-Voter->Organizer: Public Key
+Voter->Organizer: ++Register++
+Voter<-Organizer: ++Ack++
+box over Voter: ++Generates Ecc \n Public Keys++
+Voter->Organizer: ++Public Key++
 end
 
 end
@@ -18,14 +20,14 @@ end
 group #2f8e70 Public Blockchain #white
 
 group #2f2e7b Election Deployment #white
-Organizer->TP: H(public keys)
+Organizer->TP: ++H(public keys)++
 end
 
-==Election Start==
+== ++Election Start++==
 
 group #2f2e7b Vote Authentication #white
-Voter->TP: Proof of Eligibility (zk)
-Voter<-TP: Vote
+Voter->TP: ++Proof of Eligibility (zk)++
+Voter<-TP: ++Vote++
 end
 
 end
