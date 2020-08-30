@@ -1,6 +1,6 @@
 import React from 'react';
 import web3 from "web3";
-import { Link } from "react-router-dom";
+// import { Link } from "react-router-dom";
 import MerkleTree from "merkletreejs";
 import ecc from 'eosjs-ecc';
 
@@ -10,10 +10,7 @@ import VerifierArtifact from "./build/contracts/Verifier.json";
 import VerifierGammas from "./build/verifierGammas.json";
 
 import './App.css';
-import {
-  incorrectPublicKeyFormat,
-  hashPubKey,
-} from './lib/proofUtils';
+import { validKey, hashPubKey } from './lib/proofUtils';
 import { web3Provider, start } from './lib/connectionUtils';
 import { calculateTreeDepth } from './lib/zokratesProofGeneration';
 
@@ -61,7 +58,7 @@ class Deployer extends React.Component {
     if (Number.isNaN(budget)){
       this.setState({
         budget: '',
-        status: 'budget must be and integer',
+        status: 'budget must be an integer',
       });
     } else {
       this.setState({
@@ -82,7 +79,7 @@ class Deployer extends React.Component {
 
   addVoter() {
     let { pointX, pointY, voters } = this.state;
-    if (incorrectPublicKeyFormat(pointX) || incorrectPublicKeyFormat(pointY)) {
+    if (validKey(pointX) || validKey(pointY)) {
       this.setState({
         status: 'Wrong Format of Public Key',
       });
@@ -193,11 +190,11 @@ class Deployer extends React.Component {
       <div>
         <h1>Deployer</h1>
 
-        <p>{this.state.status}</p>
+        <p id="status">{this.state.status}</p>
 
         <div className="container">
           <p>Election budget:</p>
-          <input type="text" id="budget" value={this.state.budget} onChange={this.updateBudget.bind(this)} placeholder="elections budget"></input>
+          <input type="number" id="budget" value={this.state.budget} onChange={this.updateBudget.bind(this)} placeholder="elections budget"></input>
         </div>
 
         <div className="container" id="candidates">
@@ -216,7 +213,7 @@ class Deployer extends React.Component {
         </div>
 
         <button onClick={this.deploy.bind(this)}>Deploy</button>
-        <Link to="/" ><button>Home</button></Link>
+        {/* <Link to="/" ><button>Home</button></Link> */}
       </div>
     );
   }

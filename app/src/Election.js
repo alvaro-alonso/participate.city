@@ -8,8 +8,7 @@ import { initialize } from 'zokrates-js';
 
 import './App.css';
 import {
-  incorrectPrivateKeyFormat,
-  incorrectPublicKeyFormat,
+  validKey,
   hashPubKey,
   calculateMerklePath,
   splitBN,
@@ -83,7 +82,7 @@ class Election extends React.Component {
     const { getVoters, getRoot, voteForCandidate } = election.methods;
 
     // check that the keys have the right length and is a bigNumber
-    if (incorrectPublicKeyFormat(pointX) || incorrectPublicKeyFormat(pointY) || incorrectPrivateKeyFormat(privKey)) {
+    if (validKey(pointX) || validKey(pointY) || validKey(privKey)) {
       this.setState({
         status: 'invalid format of arguments',
       });
