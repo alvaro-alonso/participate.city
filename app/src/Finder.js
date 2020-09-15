@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {
   BrowserRouter as Router,
   Switch,
@@ -13,34 +13,34 @@ import './App.css';
 import { web3Provider, start } from './lib/connectionUtils';
 
 
-class Finder extends React.Component {
+function Finder (props) {
 
-  constructor(props) {
-    super(props);
-    this.provider = web3Provider();
-    this.state = { 
-      status: '',
-      hide: props.hide ? props.hide: false,
-    };
-    // use MetaMask's provider
-    start(this.provider, RegistryArtifact)
-      .then((registerArt) => {
-        const { artifact, artifactAddress, account } = registerArt;
-        this.setState({
-          account,
-          register: artifact,
-          registerAddress: artifactAddress,
-        });
-        console.log(this.state);
-      });
-  }
+  const provider = web3Provider();
+  const [status, setStatus] = useState();
+  const [searchResults, setSearchResults] = useState();
+  const [showSearchResults, setShowSearchResults] = useState(props.hide || true);
+  const [account, setAccount] = useState();
+  const [register, setRegister] = useState();
+  const [registerAddress, setRegisterAddress] = useState();
+  const [searchedAccount, setSearchedAccount] = useState();
+  const [searched, setSearched] = useState();
+  const [resultNumber, setResultNumber] = useState();
 
-  showElections() {
-    if (this.state.searchResults) {
-      return this.state.searchResults.map((election) => {
+  // use MetaMask's provider
+  start(provider, RegistryArtifact)
+    .then((registerArt) => {
+      const { artifact, artifactAddress, account } = registerArt;
+      setAccount(account);
+      setRegister(artifact);
+      setRegisterAddress(artifactAddress);
+    });
+
+  const showElections = () => {
+    if (searchResults) {
+      return searchResults.map((election) => {
         const link = `/election/${election}`
         return (<tr key={election}>
-          <td><Link to={link} onClick={this.hideFinder.bind(this)}>{election}</Link></td>
+          <td><Link to={link} onClick={hideSearchResults}>{election}</Link></td>
         </tr>);
       });
     } else {
@@ -48,90 +48,75 @@ class Finder extends React.Component {
     }
   }
 
-  async search() {
-
+  const search = async () => {
     const inputSearchField = document.getElementById("institutionFinder")
     const institution = inputSearchField.value;
 
     if (institution) {
-      this.setState({
-        status: 'Searching...',
-        searchedAccount: institution,
-        searched: '',
-      });
-      const { findElection } = this.state.register.methods;
+      setStatus('Searching...');
+      setSearchedAccount(institution);
+      setSearched('');
+
+      const { findElection } = register.methods;
       const searchResults = await findElection(institution).call();
 
-      this.setState({
-        status: '',
-        searchResults,
-        resultNumber: searchResults.length,
-      });
-      this.showElections();
+      setStatus('');
+      setSearchResults(searchResults);
+      setResultNumber(searchResults.length);
+
+      showElections();
     } 
-
   }
 
-  hideFinder() {
-    this.setState({ hide: true });
+  const hideSearchResults = () => {
+    setShowSearchResults(false);
   }
 
-  showFinder() {
-    this.setState({ hide: false });
+  const showSearch = () => {
+    setShowSearchResults(true);
   }
 
-  updateSearchBox(event) {
-    this.setState({searched : event.target.value});
+  const updateSearchBox = (event) => {
+    setSearched(event.target.value);
   }
 
-  render() {
-    const {
-      hide,
-      artifactAdress,
-      account,
-      resultNumber,
-      searchResults,
-      searchedAccount,
-      searched,
-    } = this.state;
-    const finder = <>
+  const finder = <>
+    <div>
+        <h1>Voting App — Finder</h1>
+
+        <Link to="/deploy_election"><button>create election</button></Link>
+
+        <p>{status}</p>
+
+        <div className="container" id="actions">
+          <input type="text" id="institutionFinder" value={searched} onChange={updateSearchBox} placeholder="search for an institution"/>
+          <button onClick={search}>Search</button>
+        </div>
+
+        <p>{ searchResults ? `${resultNumber} results for account: ${searchedAccount}` : '' }</p>
+        <div className="table-responsive">
+          <table id="resultsTable" className="table table-bordered">
+            <tbody>
+              {showElections()}
+            </tbody>
+          </table>
+        </div>
+      </div>
+  </>;
+
+  return (
+    <Router>
+      {showSearchResults ? finder : <></>} 
+
       <div>
-          <h1>Voting App — Finder</h1>
-
-          <Link to="/deploy_election"><button>create election</button></Link>
-
-          <p>{this.state.status}</p>
-
-          <div className="container" id="actions">
-            <input type="text" id="institutionFinder" value={searched} onChange={this.updateSearchBox.bind(this)} placeholder="search for an institution"/>
-            <button onClick={this.search.bind(this)}>Search</button>
-          </div>
-
-          <p>{ searchResults ? `${resultNumber} results for account: ${searchedAccount}` : '' }</p>
-          <div className="table-responsive">
-            <table id="resultsTable" className="table table-bordered">
-              <tbody>
-                {this.showElections()}
-              </tbody>
-            </table>
-          </div>
-        </div>
-    </>;
-
-    return (
-      <Router>
-        {!hide ? finder : <></>} 
-
-        <div>
-          <Switch>
-            <Route path="/election/:id" children={<Election provider={this.provider} />} ></Route>
-            <Route path="/deploy_election" children={<Deployer register={artifactAdress} account={account} provider={this.provider} />}></Route>
-            <Route path="/" onClick={this.showFinder.bind(this)} ></Route>
-          </Switch>
-        </div>
-      </Router>
-    );
-  }
+        <Switch>
+          <Route path="/election/:id" children={<Election provider={provider} />} ></Route>
+          <Route path="/deploy_election" children={<Deployer register={registerAddress} account={account} provider={provider} />} ></Route>
+          <Route path="/" onClick={showSearch} ></Route>
+        </Switch>
+      </div>
+    </Router>
+  );
 }
 
   
