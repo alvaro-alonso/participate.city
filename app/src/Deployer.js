@@ -14,8 +14,9 @@ import { validKey, hashPubKey } from './lib/proofUtils';
 import { web3Provider, start } from './lib/connectionUtils';
 import { calculateTreeDepth } from './lib/zokratesProofGeneration';
 
+const budgetInputErrorMsg = 'budget must be a positive integer';
 
-function Deployer (props) {
+export function Deployer (props) {
 
   const provider = web3Provider(props.provider);
   const [register, setRegister] = useState(props.register);
@@ -24,9 +25,9 @@ function Deployer (props) {
   const [voters, setVoters] = useState([]);
 
   const [registerAddr, setRegisterAddr] = useState();
-  const [status, setStatus] = useState();
-  const [budget, setBudget] = useState();
-  const [insertCandidate, setInsertCandidate] = useState();
+  const [status, setStatus] = useState('');
+  const [budget, setBudget] = useState('');
+  const [insertCandidate, setInsertCandidate] = useState('');
   const [pointX, setPointX] = useState();
   const [pointY, setPointY] = useState();
 
@@ -54,9 +55,9 @@ function Deployer (props) {
   const updateBudget = (event) => {
     const input  = event.target.value;
     const budget = parseInt(input);
-    if (Number.isNaN(budget)){
-      setBudget();
-      setStatus('budget must be an integer');
+    if (Number.isNaN(budget) | budget < 0){
+      setBudget('');
+      setStatus(budgetInputErrorMsg);
     } else {
       setBudget(budget);
       setStatus();
@@ -64,8 +65,14 @@ function Deployer (props) {
   }
 
   const addCandidate = () => {
-    setCandidates(candidates.push(insertCandidate));
-    setInsertCandidate();
+    if (candidates.includes(insertCandidate)) {
+      setStatus('Candidate Name already inserted. Make sure candidates names are unique');
+      setInsertCandidate();
+    } else {
+      setCandidates(candidates.push(insertCandidate));
+      setInsertCandidate();
+      setStatus();
+    }
   }
 
   const addVoter = () => {
@@ -172,8 +179,8 @@ function Deployer (props) {
 
       <div className="container" id="candidates">
         <p>Candidates</p>
-        <input type="text" id="candidate" value={insertCandidate} onChange={updateCandidateField} placeholder="insert candidate" />
-        <button onClick={addCandidate}>add</button>
+        <input type="text" id="candidate" value={insertCandidate} onChange={updateCandidateField} placeholder="insert candidate"></input>
+        <button id="addCandidateButton" onClick={addCandidate}>add</button>
         {candidates.length > 0? <ul>{candidates.map(candidate => <li key={candidate}>{candidate}</li>)}</ul> : null}
       </div>
 
@@ -191,6 +198,4 @@ function Deployer (props) {
   );
 }
 
-  
 export default Deployer;
-
