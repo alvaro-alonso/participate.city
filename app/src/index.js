@@ -1,12 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
-import Finder from './Finder';
+import Home from './Home';
 import * as serviceWorker from './serviceWorker';
 
 
 ReactDOM.render(<>
-  <Finder />
+  <Home />
 </>, document.getElementById('root'));
 
 // If you want your app to work offline and load faster, you can change
