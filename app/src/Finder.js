@@ -105,7 +105,7 @@ function Finder (props) {
   </>;
 
   return (
-    <Router>
+    <Router basename='/app'>
       {showSearchResults ? finder : <></>} 
 
       <div>
