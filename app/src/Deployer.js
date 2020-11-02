@@ -11,34 +11,35 @@ import VerifierGammas from "./build/verifierGammas.json";
 
 import './App.css';
 import { validKey, hashPubKey } from './lib/proofUtils';
-import { web3Provider, start } from './lib/connectionUtils';
+import { start } from './lib/connectionUtils';
 import { calculateTreeDepth } from './lib/zokratesProofGeneration';
 
 const budgetInputErrorMsg = 'budget must be a positive integer';
 
 export function Deployer (props) {
 
-  const provider = web3Provider(props.provider);
-  const [register, setRegister] = useState(props.register);
-  const [account, setAccount] = useState(props.account);
+  const [provider, setProvider] = useState()
+  const [register, setRegister] = useState();
+  const [account, setAccount] = useState();
   const [candidates, setCandidates] = useState([]);
   const [voters, setVoters] = useState([]);
 
   const [registerAddr, setRegisterAddr] = useState();
-  const [status, setStatus] = useState('');
+  const [status, setStatus] = useState('First, Log in with metamask to your Ethereum account to create an election');
   const [budget, setBudget] = useState('');
   const [insertCandidate, setInsertCandidate] = useState('');
   const [pointX, setPointX] = useState();
   const [pointY, setPointY] = useState();
 
-  if (!(register && account)) {
-    start(provider, RegistryArtifact).then((registerArt) => {
-      const { artifact, artifactAddress, account } = registerArt;
-      setAccount(account);
-      setRegister(artifact);
-      setRegisterAddr(artifactAddress);
-    })
-  }
+  start(RegistryArtifact).then((registryObj) => {
+    if (registryObj.account && registryObj.artifact) {
+      setProvider(registryObj.provider);
+      setAccount(registryObj.account);
+      setRegister(registryObj.artifact);
+      setRegisterAddr(registryObj.artifactAddress);
+      setStatus('');
+    }
+  });
 
   const updateCandidateField = (event) => {
     setInsertCandidate(event.target.value);
@@ -69,8 +70,8 @@ export function Deployer (props) {
       setStatus('Candidate Name already inserted. Make sure candidates names are unique');
       setInsertCandidate();
     } else {
-      setCandidates(candidates.push(insertCandidate));
-      setInsertCandidate();
+      setCandidates([...candidates, insertCandidate]);
+      setInsertCandidate('');
       setStatus();
     }
   }
@@ -85,14 +86,15 @@ export function Deployer (props) {
     if (voters.includes(insertedVoter)) {
       setStatus('voter already inserted');
     } else {
-      setVoters(voters.push(insertedVoter));
-      setStatus();
-      setPointX();
-      setPointY();
+      setVoters([...voters, insertedVoter]);
+      setStatus('');
+      setPointX('');
+      setPointY('');
     }
   }
 
   const deploy = async () => {
+
     if (budget && candidates.length > 0 && voters.length > 0) {
       const { findVerifier } = register.methods;
       const treeDepth = calculateTreeDepth(voters.length);
@@ -167,33 +169,39 @@ export function Deployer (props) {
   }
 
   return (
-    <div>
-      <h1>Deployer</h1>
+    <div class="hoc container clear">
+      <div class="form-block">
 
-      <p id="status">{status}</p>
+        <h1 class="title"><b>Election Deployment</b></h1>
+        <p id="status">{status}</p>
 
-      <div className="container">
-        <p>Election budget:</p>
-        <input type="number" id="budget" value={budget} onChange={updateBudget} placeholder="elections budget"></input>
+        <div class="form-fields">
+
+          <div class="input-field">
+            <label for="budget"> Election Budget:</label>
+            <input type="number" min="0" id="budget" value={budget} onChange={updateBudget} placeholder="elections budget" />
+          </div>
+
+          <div class="input-field">
+            <label for="candidate">Election Candidates:</label>
+            <input type="text" class="inline" id="candidate" value={insertCandidate} onChange={updateCandidateField} placeholder="insert candidate" />
+            <button class="inline" id="addCandidateButton" onClick={addCandidate}>add</button>
+            {candidates.length > 0? <ul>{candidates.map(candidate => <li key={candidate}>{candidate}</li>)}</ul> : null}
+          </div>
+          
+          <div class="input-field">
+            <label for="point-x">Election Voters:</label>
+            <input type="text" class="inline" id="point-x" value={pointX} onChange={updatePointX} placeholder="insert point x" />
+            <input type="text" class="inline" id="point-y" value={pointY} onChange={updatePointY} placeholder="insert point y" />
+            <button class="inline" onClick={addVoter}>add</button>
+            {voters.length > 0? <ul>{voters.map(voter => <li key={voter}>{voter}</li>)}</ul> : null}
+          </div>
+
+        </div>
+
+        <button class="btn" onClick={deploy} disabled={!account}>Deploy</button>
+
       </div>
-
-      <div className="container" id="candidates">
-        <p>Candidates</p>
-        <input type="text" id="candidate" value={insertCandidate} onChange={updateCandidateField} placeholder="insert candidate"></input>
-        <button id="addCandidateButton" onClick={addCandidate}>add</button>
-        {candidates.length > 0? <ul>{candidates.map(candidate => <li key={candidate}>{candidate}</li>)}</ul> : null}
-      </div>
-
-      <div className="container" id="voters">
-        <p>Voters</p>
-        <input type="text" id="point-x" value={pointX} onChange={updatePointX} placeholder="insert point x" />
-        <input type="text" id="point-y" value={pointY} onChange={updatePointY} placeholder="insert point y" />
-        <button onClick={addVoter}>add</button>
-        {voters.length > 0? <ul>{voters.map(voter => <li key={voter}>{voter}</li>)}</ul> : null}
-      </div>
-
-      <button onClick={deploy}>Deploy</button>
-      {/* <Link to="/" ><button>Home</button></Link> */}
     </div>
   );
 }

@@ -36,3 +36,59 @@
     transform: rotate(360deg);
   }
 }
+
+.form-fields {
+  padding: 25px;
+  margin: 25px;
+  /* box-shadow: 0 2px 5px #f5f5f5;  */
+  /* background: #f5f5f5;  */
+  }
+
+.form-fields > * {
+  margin-top: 20px;
+}
+
+.form-block > * {
+  font-family: inherit;
+  margin-top: 50px;
+}
+
+.form-block > .title {
+  font-size: 2em;
+}
+
+.inline {
+  display:inline-block;
+  margin-right:5px;
+}
+
+.input-field {
+  font-size: 1em;
+  padding: 0.5em;
+  border-radius: 1em;
+}
+
+.input > label, input, button {
+  font-size: inherit;
+  padding: 0.2em;
+  margin: 0.1em 0.2em;
+  /* the following ensures they're all using the same box-model for rendering */
+  -moz-box-sizing: content-box; /* or `border-box` */
+  -webkit-box-sizing: content-box;
+  box-sizing: content-box;
+}
+
+.search-box {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 90%;
+}
+
+.search-box > input {
+  width: 60%;
+}
+
+button:disabled {
+  background-color: #8d8f92;
+}

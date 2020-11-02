@@ -1,46 +1,37 @@
 import React, {useState} from 'react';
-import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  Link,
-} from "react-router-dom";
+import { Link } from "react-router-dom";
 
-import Election from "./Election";
-import Deployer from "./Deployer";
+// import Election from "./Election";
+// import Deployer from "./Deployer";
 import RegistryArtifact from "./build/contracts/ElectionRegistry.json";
 import './App.css';
-import { web3Provider, start } from './lib/connectionUtils';
+import { start } from './lib/connectionUtils';
 
 
-function Finder (props) {
+function Finder () {
 
-  const provider = web3Provider();
-  const [status, setStatus] = useState();
+  const [status, setStatus] = useState('First, Log in with metamask to your Ethereum account to create an election');
   const [searchResults, setSearchResults] = useState();
-  const [showSearchResults, setShowSearchResults] = useState(props.hide || true);
   const [account, setAccount] = useState();
   const [register, setRegister] = useState();
-  const [registerAddress, setRegisterAddress] = useState();
   const [searchedAccount, setSearchedAccount] = useState();
   const [searched, setSearched] = useState();
   const [resultNumber, setResultNumber] = useState();
 
-  // use MetaMask's provider
-  start(provider, RegistryArtifact)
-    .then((registerArt) => {
-      const { artifact, artifactAddress, account } = registerArt;
-      setAccount(account);
-      setRegister(artifact);
-      setRegisterAddress(artifactAddress);
-    });
+  start(RegistryArtifact).then((registryObj) => {
+    if (registryObj.account && registryObj.artifact) {
+      setAccount(registryObj.account);
+      setRegister(registryObj.artifact);
+      setStatus('');
+    }
+  });
 
   const showElections = () => {
     if (searchResults) {
       return searchResults.map((election) => {
         const link = `/election/${election}`
         return (<tr key={election}>
-          <td><Link to={link} onClick={hideSearchResults}>{election}</Link></td>
+          <td><Link to={link}>{election}</Link></td>
         </tr>);
       });
     } else {
@@ -49,6 +40,8 @@ function Finder (props) {
   }
 
   const search = async () => {
+    // Check if not account
+
     const inputSearchField = document.getElementById("institutionFinder")
     const institution = inputSearchField.value;
 
@@ -68,55 +61,36 @@ function Finder (props) {
     } 
   }
 
-  const hideSearchResults = () => {
-    setShowSearchResults(false);
-  }
-
-  const showSearch = () => {
-    setShowSearchResults(true);
-  }
-
   const updateSearchBox = (event) => {
     setSearched(event.target.value);
   }
 
-  const finder = <>
-    <div>
-        <h1>Voting App — Finder</h1>
+  return (<>
+    <div class="hoc container clear">
+      <div class="form-block">
+        <h1 class="title">Election Finder</h1>
 
-        <Link to="/deploy_election"><button>create election</button></Link>
+        <div class="form-block">
+          <p>{status}</p>
 
-        <p>{status}</p>
+          <div className="input-field search-box" id="actions">
+            <input class="inline" type="text" id="institutionFinder" value={searched} onChange={updateSearchBox} placeholder="search for an institution"/>
+            <button class="btn inline" onClick={search} disabled={!account} >Search</button>
+          </div>
 
-        <div className="container" id="actions">
-          <input type="text" id="institutionFinder" value={searched} onChange={updateSearchBox} placeholder="search for an institution"/>
-          <button onClick={search}>Search</button>
+          <p>{ searchResults ? `${resultNumber} results for account: ${searchedAccount}` : '' }</p>
+          <div className="table-responsive">
+            <table id="resultsTable" className="table table-bordered">
+              <tbody>
+                {showElections()}
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        <p>{ searchResults ? `${resultNumber} results for account: ${searchedAccount}` : '' }</p>
-        <div className="table-responsive">
-          <table id="resultsTable" className="table table-bordered">
-            <tbody>
-              {showElections()}
-            </tbody>
-          </table>
-        </div>
       </div>
-  </>;
-
-  return (
-    <Router basename='/app'>
-      {showSearchResults ? finder : <></>} 
-
-      <div>
-        <Switch>
-          <Route path="/election/:id" children={<Election provider={provider} />} ></Route>
-          <Route path="/deploy_election" children={<Deployer register={registerAddress} account={account} provider={provider} />} ></Route>
-          <Route path="/" onClick={showSearch} ></Route>
-        </Switch>
-      </div>
-    </Router>
-  );
+    </div>
+  </>);
 }
 
   
