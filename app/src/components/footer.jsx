@@ -26,7 +26,7 @@ const footer = () => {
               <li><i class="fa fa-envelope-o"></i> info@domain.com</li>
             </ul> */}
             <ul class="faico clear">
-              <li><Link to="/https://github.com/alvaro-alonso"><i class="fa fa-github"></i></Link></li>
+              <li><Link to="https://github.com/alvaro-alonso/participate.city"><i class="fa fa-github"></i></Link></li>
               {/* <li><a class="faicon-facebook" href="#"><i class="fa fa-facebook"></i></a></li>
               <li><a class="faicon-twitter" href="#"><i class="fa fa-twitter"></i></a></li>
               <li><a class="faicon-dribble" href="#"><i class="fa fa-dribbble"></i></a></li>
