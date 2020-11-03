@@ -20,7 +20,7 @@ import VotingArtifact from "./build/contracts/Voting.json";
 const invalidProofMsg = 'Incorrect proof of eligibility';
 
 
-function Election ({ id }) {
+function Election ({ id, warning }) {
 
   const address = id;
   const [provider, setProvider] = useState()
@@ -198,6 +198,8 @@ function Election ({ id }) {
 
   return (
     <div>
+      { warning }
+      
       <div className="table-responsive">
         <h1>Election</h1>
 

@@ -170,6 +170,8 @@ export function Deployer (props) {
 
   return (
     <div class="hoc container clear">
+      { props.warning }
+
       <div class="form-block">
 
         <h1 class="title"><b>Election Deployment</b></h1>

@@ -9,7 +9,7 @@ import Deployer from "./Deployer";
 import Election from './Election';
 
 import './style/layout.css';
-import { Header, Home, Footer } from './components'
+import { Header, Home, Footer, ConstructionWarning } from './components'
 
 
 export default function App (props) {
@@ -19,9 +19,9 @@ export default function App (props) {
       <Header />
 
       <Switch>
-        <Route path="/deploy_election" children={<Deployer />} ></Route>
-        <Route path="/vote" children={<Finder />} ></Route>
-        <Route path="/election/:id" children={<Election />} ></Route>
+        <Route path="/deploy_election" children={<Deployer warning={<ConstructionWarning />} />} ></Route>
+        <Route path="/vote" children={<Finder warning={<ConstructionWarning />} />}  ></Route>
+        <Route path="/election/:id" children={<Election warning={<ConstructionWarning />} />} ></Route>
         <Route path="/" children={<Home />} ></Route>
       </Switch>
 

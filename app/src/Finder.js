@@ -8,7 +8,7 @@ import './App.css';
 import { start } from './lib/connectionUtils';
 
 
-function Finder () {
+function Finder ({ warning }) {
 
   const [status, setStatus] = useState('First, Log in with metamask to your Ethereum account to create an election');
   const [searchResults, setSearchResults] = useState();
@@ -67,6 +67,8 @@ function Finder () {
 
   return (<>
     <div class="hoc container clear">
+      { warning }
+
       <div class="form-block">
         <h1 class="title">Election Finder</h1>
 
