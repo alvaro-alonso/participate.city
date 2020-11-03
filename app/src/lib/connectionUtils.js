@@ -1,25 +1,22 @@
 import web3 from "web3";
 
-export const web3Provider = (provider) => {
-  if (!provider) {
-    if (window.ethereum) {
-      // use MetaMask's provider
-      const prov = new web3(window.ethereum);
-      window.ethereum.enable();
-      console.log('ethereum detected');
-      return prov;
-    } else {
-      return new web3( web3.currentProvider || "http://127.0.0.1:7545" );
-    }
+const web3Provider = async () => {
+  if (window.ethereum) {
+    // use MetaMask's provider
+    const prov = new web3(window.ethereum);
+    await window.ethereum.enable();
+    console.log('ethereum detected');
+    return prov;
   } else {
-    return provider;
+    return new web3( web3.currentProvider || "http://127.0.0.1:7545" );
   }
 } 
 
-export const start = async (provider, artifact, artifactAddress) => {
+export const start = async (artifact, artifactAddress) => {
 
   try {
     // get contract instance
+    const provider = await web3Provider();
     const networkId = await provider.eth.net.getId();
     console.log(networkId);
     const deployedNetwork = artifact.networks[networkId];
@@ -28,6 +25,7 @@ export const start = async (provider, artifact, artifactAddress) => {
     // get accounts
     const accounts = await provider.eth.getAccounts();
     return {
+      provider,
       artifact: new provider.eth.Contract(
         artifact.abi,
         address,

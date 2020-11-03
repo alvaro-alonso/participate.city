@@ -13,18 +13,18 @@ import {
   calculateMerklePath,
   splitBN,
 } from './lib/proofUtils';
-import { web3Provider, start } from './lib/connectionUtils';
+import { start } from './lib/connectionUtils';
 import { generateZokratesSourceCode, calculateTreeDepth } from "./lib/zokratesProofGeneration";
 import VotingArtifact from "./build/contracts/Voting.json";
 
 const invalidProofMsg = 'Incorrect proof of eligibility';
 
 
-function Election (props) {
+function Election ({ id, warning }) {
 
-  const address = props.match.params.id;
-  const provider = web3Provider(props.provider);
-  const [status, setStatus] = useState('');
+  const address = id;
+  const [provider, setProvider] = useState()
+  const [status, setStatus] = useState('First, Log in with metamask to your Ethereum account to be able to vote');
   const [account, setAccount] = useState();
   const [election, setElection] = useState();
   const [availableCandidates, setAvailableCandidates] = useState();
@@ -33,14 +33,17 @@ function Election (props) {
   const [pointX, setPointX] = useState();
   const [pointY, setPointY] = useState();
 
-  start(provider, VotingArtifact, address)
+  start(VotingArtifact, address)
     .then((electionArt) => {
-      const { artifact, account } = electionArt;
-      setAccount(account);
-      setElection(artifact);
-      getBudget();
-      getAvailableCandidates()
-        .then(() => getVotes() );
+      if (electionArt.account && electionArt.artifact) {
+        const { provider, artifact, account } = electionArt;
+        setProvider(provider)
+        setAccount(account);
+        setElection(artifact);
+        getBudget();
+        getAvailableCandidates()
+          .then(() => getVotes() );
+      }
   });
 
   const getAvailableCandidates = async () => {
@@ -195,6 +198,8 @@ function Election (props) {
 
   return (
     <div>
+      { warning }
+      
       <div className="table-responsive">
         <h1>Election</h1>
 
