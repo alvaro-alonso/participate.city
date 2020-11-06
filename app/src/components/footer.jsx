@@ -1,5 +1,10 @@
 import React from "react";
 
+import eth_image from "../images/eth-diamond.png";
+import zkt_image from "../images/zokrates.png";
+import ipfs_image from "../images/ipfs.png";
+import fleek_image from "../images/fleek.jpg";
+import react_image from "../images/react.png";
 
 const footer = () => {
   return (
@@ -32,16 +37,14 @@ const footer = () => {
               <li><a class="faicon-linkedin" href="#"><i class="fa fa-linkedin"></i></a></li> */}
             </ul>
           </div>
-          {/* <div class="one_quarter">
-            <h6 class="heading">FAQ</h6>
-            <ul class="nospace linklist">
-              <li><a href="#">Egestas cursus purus</a></li>
-              <li><a href="#">Quis rutrum est accumsan</a></li>
-              <li><a href="#">Sed nunc commodo massa</a></li>
-              <li><a href="#">Vel elit eleifend</a></li>
-              <li><a href="#">Sollicitudin morbi feugiat</a></li>
-            </ul>
-          </div> */}
+          <div class="one_quarter">
+            <h6 class="heading">Powered By:</h6>
+              <img class="stack-logo" src={ eth_image } alt="ethereum" />
+              <img class="stack-logo" src={ zkt_image } alt="zokrates" />
+              <img class="stack-logo" src={ ipfs_image } alt="ipfs" />
+              <img class="stack-logo" src={ fleek_image } alt="fleek" />
+              <img class="stack-logo" src={ react_image } alt="react" />
+          </div>
           {/* ################################################################################## --> */}
         </footer>
       </div>
