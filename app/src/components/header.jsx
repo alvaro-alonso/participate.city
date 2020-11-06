@@ -15,28 +15,26 @@ const header = () => {
           </div>
           <nav id="mainav" class="fl_right">
         <ul class="clear">
-          {/* <li><a class="drop" href="#">About</a>
-          <ul>
-            <li><a href="pages/gallery.html">Gallery</a></li>
-            <li><a href="pages/full-width.html">Full Width</a></li>
-            <li><a href="pages/sidebar-left.html">Sidebar Left</a></li>
-            <li><a href="pages/sidebar-right.html">Sidebar Right</a></li>
-            <li><a href="pages/basic-grid.html">Basic Grid</a></li>
-          </ul>
-          </li>
           <li><a class="drop" href="#">Technology</a>
-          <ul>
-            <li><a href="#">Level 2</a></li>
-            <li><a class="drop" href="#">Level 2 + Drop</a>
             <ul>
-              <li><a href="#">Level 3</a></li>
-              <li><a href="#">Level 3</a></li>
-              <li><a href="#">Level 3</a></li>
+              <li><a href="https://github.com/alvaro-alonso/participate.city/blob/tree/master/white_paper/participate_city_whitepaper.pdf">White Paper</a></li>
             </ul>
-            </li>
-            <li><a href="#">Level 2</a></li>
-          </ul>
-          </li> */}
+          </li>
+          {/*
+          <li><a class="drop" href="#">Technology</a>
+            <ul>
+              <li><a href="#">Level 2</a></li>
+              <li><a class="drop" href="#">Level 2 + Drop</a>
+              <ul>
+                <li><a href="#">Level 3</a></li>
+                <li><a href="#">Level 3</a></li>
+                <li><a href="#">Level 3</a></li>
+              </ul>
+              </li>
+              <li><a href="#">Level 2</a></li>
+            </ul>
+          </li>
+          */}
           <li><a class="drop" href="#">Application</a>
           <ul>
             <li><Link to="/deploy_election" >Create An Election</Link></li>
