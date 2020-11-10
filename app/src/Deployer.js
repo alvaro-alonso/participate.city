@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import web3 from "web3";
 // import { Link } from "react-router-dom";
 import MerkleTree from "merkletreejs";
@@ -13,8 +13,11 @@ import './App.css';
 import { validKey, hashPubKey } from './lib/proofUtils';
 import { start } from './lib/connectionUtils';
 import { calculateTreeDepth } from './lib/zokratesProofGeneration';
+import { EditableEntry } from './components';
 
 const budgetInputErrorMsg = 'budget must be a positive integer';
+
+
 
 export function Deployer (props) {
 
@@ -31,15 +34,17 @@ export function Deployer (props) {
   const [pointX, setPointX] = useState();
   const [pointY, setPointY] = useState();
 
-  start(RegistryArtifact).then((registryObj) => {
-    if (registryObj.account && registryObj.artifact) {
-      setProvider(registryObj.provider);
-      setAccount(registryObj.account);
-      setRegister(registryObj.artifact);
-      setRegisterAddr(registryObj.artifactAddress);
-      setStatus('');
-    }
-  });
+  useEffect(() => {
+    start(RegistryArtifact).then((registryObj) => {
+      if (registryObj.account && registryObj.artifact) {
+        setProvider(registryObj.provider);
+        setAccount(registryObj.account);
+        setRegister(registryObj.artifact);
+        setRegisterAddr(registryObj.artifactAddress);
+        setStatus('');
+      }
+    });
+  }, [account]);
 
   const updateCandidateField = (event) => {
     setInsertCandidate(event.target.value);
@@ -70,7 +75,7 @@ export function Deployer (props) {
       setStatus('Candidate Name already inserted. Make sure candidates names are unique');
       setInsertCandidate();
     } else {
-      setCandidates([...candidates, insertCandidate]);
+      setCandidates([...candidates, [insertCandidate, setCandidates]]);
       setInsertCandidate('');
       setStatus();
     }
@@ -91,6 +96,24 @@ export function Deployer (props) {
       setPointX('');
       setPointY('');
     }
+  }
+
+  const deleteCandidate = (id) => {
+    const filteredCandidates = candidates.filter(candidate => id !== candidate);
+    setCandidates(filteredCandidates);
+  };
+
+  const deleteVoter = (id) => {
+    const filteredVoters = voters.filter(voter => id !== voter);
+    setVoters(filteredVoters);
+  };
+
+  // const editableList = candidates.map(candidate => (
+  //    <EditableEntry element={candidate} delete={() => deleteCandidate(candidate)} />
+  // ));
+  
+  const editableList = (array, deleteFunc) => {
+    return array.map(element => <EditableEntry element={element} delete={() => deleteFunc(element)} />);
   }
 
   const deploy = async () => {
@@ -181,22 +204,27 @@ export function Deployer (props) {
 
           <div class="input-field">
             <label for="budget"> Election Budget:</label>
-            <input type="number" min="0" id="budget" value={budget} onChange={updateBudget} placeholder="elections budget" />
+            <input type="number" min="0" id="budget" disabled={!account} value={budget} onChange={updateBudget} placeholder="elections budget" />
           </div>
 
           <div class="input-field">
             <label for="candidate">Election Candidates:</label>
-            <input type="text" class="inline" id="candidate" value={insertCandidate} onChange={updateCandidateField} placeholder="insert candidate" />
-            <button class="inline" id="addCandidateButton" onClick={addCandidate}>add</button>
-            {candidates.length > 0? <ul>{candidates.map(candidate => <li key={candidate}>{candidate}</li>)}</ul> : null}
+            <input type="text" class="inline" id="candidate" disabled={!account} value={insertCandidate} onChange={updateCandidateField} placeholder="insert candidate" />
+            <button class="inline" id="addCandidateButton" onClick={addCandidate} disabled={!account}>add</button>
+            <ul class="fa-ul">
+              { editableList(candidates, deleteCandidate) }
+            </ul>
+
           </div>
           
           <div class="input-field">
             <label for="point-x">Election Voters:</label>
-            <input type="text" class="inline" id="point-x" value={pointX} onChange={updatePointX} placeholder="insert point x" />
-            <input type="text" class="inline" id="point-y" value={pointY} onChange={updatePointY} placeholder="insert point y" />
-            <button class="inline" onClick={addVoter}>add</button>
-            {voters.length > 0? <ul>{voters.map(voter => <li key={voter}>{voter}</li>)}</ul> : null}
+            <input type="text" class="inline" id="point-x" disabled={!account} value={pointX} onChange={updatePointX} placeholder="insert point x" />
+            <input type="text" class="inline" id="point-y" disabled={!account} value={pointY} onChange={updatePointY} placeholder="insert point y" />
+            <button class="inline" onClick={addVoter} disabled={!account}>add</button>
+            <ul class="fa-ul">
+              { editableList(voters, deleteVoter) }
+            </ul>
           </div>
 
         </div>
