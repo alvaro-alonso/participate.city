@@ -15,9 +15,9 @@ const header = () => {
           </div>
           <nav id="mainav" class="fl_right">
         <ul class="clear">
-          <li><a class="drop" href="!#" >Technology</a>
+          <li><a class="drop" href="#" >Technology</a>
             <ul>
-              <li><a href="https://github.com/alvaro-alonso/participate.city/blob/tree/master/white_paper/participate_city_whitepaper.pdf">White Paper</a></li>
+              <li><a href="https://github.com/alvaro-alonso/participate.city/blob/master/white_paper/participate_city_whitepaper.pdf">White Paper</a></li>
             </ul>
           </li>
           {/*
@@ -35,7 +35,7 @@ const header = () => {
             </ul>
           </li>
           */}
-          <li><a class="drop" href="!#">Application</a>
+          <li><a class="drop" href="#">Application</a>
           <ul>
             <li><Link to="/deploy_election" >Create An Election</Link></li>
             <li><Link to="/vote" >Cast A Vote</Link></li>
