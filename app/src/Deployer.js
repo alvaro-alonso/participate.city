@@ -18,7 +18,6 @@ import { EditableEntry } from './components';
 const budgetInputErrorMsg = 'budget must be a positive integer';
 
 
-
 export function Deployer (props) {
 
   const [provider, setProvider] = useState()
@@ -75,7 +74,7 @@ export function Deployer (props) {
       setStatus('Candidate Name already inserted. Make sure candidates names are unique');
       setInsertCandidate();
     } else {
-      setCandidates([...candidates, [insertCandidate, setCandidates]]);
+      setCandidates([...candidates, insertCandidate]);
       setInsertCandidate('');
       setStatus();
     }
@@ -107,10 +106,6 @@ export function Deployer (props) {
     const filteredVoters = voters.filter(voter => id !== voter);
     setVoters(filteredVoters);
   };
-
-  // const editableList = candidates.map(candidate => (
-  //    <EditableEntry element={candidate} delete={() => deleteCandidate(candidate)} />
-  // ));
   
   const editableList = (array, deleteFunc) => {
     return array.map(element => <EditableEntry element={element} delete={() => deleteFunc(element)} />);
