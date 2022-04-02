@@ -187,44 +187,44 @@ export function Deployer (props) {
   }
 
   return (
-    <div class="hoc container clear">
+    <div className="hoc container clear">
       { props.warning }
 
-      <div class="form-block">
+      <div className="form-block">
 
-        <h1 class="title"><b>Election Deployment</b></h1>
+        <h1 className="title"><b>Election Deployment</b></h1>
         <p id="status">{status}</p>
 
-        <div class="form-fields">
+        <div className="form-fields">
 
-          <div class="input-field">
-            <label for="budget"> Election Budget:</label>
+          <div className="input-field">
+            <label htmlFor="budget"> Election Budget:</label>
             <input type="number" min="0" id="budget" disabled={!account} value={budget} onChange={updateBudget} placeholder="elections budget" />
           </div>
 
-          <div class="input-field">
-            <label for="candidate">Election Candidates:</label>
-            <input type="text" class="inline" id="candidate" disabled={!account} value={insertCandidate} onChange={updateCandidateField} placeholder="insert candidate" />
-            <button class="inline" id="addCandidateButton" onClick={addCandidate} disabled={!account}>add</button>
-            <ul class="fa-ul">
+          <div className="input-field">
+            <label htmlFor="candidate">Election Candidates:</label>
+            <input type="text" className="inline" id="candidate" disabled={!account} value={insertCandidate} onChange={updateCandidateField} placeholder="insert candidate" />
+            <button className="inline" id="addCandidateButton" onClick={addCandidate} disabled={!account}>add</button>
+            <ul className="fa-ul">
               { editableList(candidates, deleteCandidate) }
             </ul>
 
           </div>
           
-          <div class="input-field">
-            <label for="point-x">Election Voters:</label>
-            <input type="text" class="inline" id="point-x" disabled={!account} value={pointX} onChange={updatePointX} placeholder="insert point x" />
-            <input type="text" class="inline" id="point-y" disabled={!account} value={pointY} onChange={updatePointY} placeholder="insert point y" />
-            <button class="inline" onClick={addVoter} disabled={!account}>add</button>
-            <ul class="fa-ul">
+          <div className="input-field">
+            <label htmlFor="point-x">Election Voters:</label>
+            <input type="text" className="inline" id="point-x" disabled={!account} value={pointX} onChange={updatePointX} placeholder="insert point x" />
+            <input type="text" className="inline" id="point-y" disabled={!account} value={pointY} onChange={updatePointY} placeholder="insert point y" />
+            <button className="inline" onClick={addVoter} disabled={!account}>add</button>
+            <ul className="fa-ul">
               { editableList(voters, deleteVoter) }
             </ul>
           </div>
 
         </div>
 
-        <button class="btn" onClick={deploy} disabled={!account}>Deploy</button>
+        <button className="btn" onClick={deploy} disabled={!account}>Deploy</button>
 
       </div>
     </div>
